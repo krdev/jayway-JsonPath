@@ -121,4 +121,39 @@ public interface ReadContext {
      */
     ReadContext withListeners(EvaluationListener... listener);
 
+    /**
+     * Reads the given path from this context and returns the root object, every object from the root to the leaf will be matched
+     *
+     * Sample code to create a TypeRef <code>
+     *       TypeRef ref = new TypeRef<List<Integer>>() {};
+     * </code>
+     *
+     * @param path path to apply
+     * @param typeRef expected return type (will try to map)
+     * @param <T>
+     * @return result
+     */
+    // <T> T readRoot(String path, TypeRef<T> typeRef);
+
+    /**
+     * Reads the given path from this context and returns the root object, every object from the root to the leaf will be matched
+     *
+     * @param path path to read
+     * @param type expected return type (will try to map)
+     * @param filters filters
+     * @param <T>
+     * @return result
+     */
+    <T> T readRoot(String path, Class<T> type, Predicate... filters);
+
+    /**
+     * Reads the given path from this context and returns the root object, every object from the root to the leaf will be matched
+     *
+     * @param path path to read
+     * @param filters filters
+     * @param <T>
+     * @return result
+     */
+    <T> T readRoot(String path, Predicate... filters);
+
 }

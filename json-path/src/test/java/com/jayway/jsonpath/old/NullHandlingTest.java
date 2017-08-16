@@ -1,16 +1,18 @@
 package com.jayway.jsonpath.old;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+
+import java.util.List;
+
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
 
 public class NullHandlingTest {
 
@@ -62,6 +64,28 @@ public class NullHandlingTest {
         List<Integer> result = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(DOCUMENT).read("$.children[*].age");
 
         Assertions.assertThat(result).containsSequence(0, null);
+
+    }
+
+    @Test
+    public void the_age_of_all_with_age_defined_readLineageRoot() {
+        // List<Integer> result = JsonPath.read(DOCUMENT, "$.children[*].age");
+        Object result = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(DOCUMENT)
+                .readRoot("$.children[*].age");
+
+        Assert.assertNotNull(result);
+        // Assertions.assertThat(result).containsSequence(0, null);
+
+    }
+
+    @Test
+    public void the_age_of_all_with_notpresent_readLineageRoot() {
+        // List<Integer> result = JsonPath.read(DOCUMENT, "$.children[*].age");
+        Object result = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(DOCUMENT)
+                .readRoot("$.children[*].agee");
+
+        Assert.assertNotNull(result);
+        // Assertions.assertThat(result).containsSequence(0, null);
 
     }
 

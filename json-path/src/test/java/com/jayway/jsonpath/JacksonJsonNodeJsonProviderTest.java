@@ -1,5 +1,15 @@
 package com.jayway.jsonpath;
 
+import static com.jayway.jsonpath.JsonPath.using;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,14 +17,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jayway.jsonpath.spi.mapper.MappingException;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
-import static com.jayway.jsonpath.JsonPath.using;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class JacksonJsonNodeJsonProviderTest extends BaseTest {
 
@@ -47,6 +49,12 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void json_can_be_parsed_readLineageRoot() {
+        ObjectNode node = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readRoot("$");
+        assertThat(node.get("string-property").asText()).isEqualTo("string-value");
+    }
+
+    @Test
     public void always_return_same_object() { // Test because of Bug #211
     	DocumentContext context = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT);
         ObjectNode node1 = context.read("$");
@@ -55,7 +63,21 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
         context.put("$", "child", child1);
         ObjectNode node2 = context.read("$");
         ObjectNode child2 = context.read("$.child");
-        
+
+        assertThat(node1).isSameAs(node2);
+        assertThat(child1).isSameAs(child2);
+    }
+
+    @Test
+    public void always_return_same_object_readLineageRoot() { // Test because of Bug #211
+        DocumentContext context = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT);
+        ObjectNode node1 = context.readRoot("$");
+        ObjectNode child1 = new ObjectNode(JsonNodeFactory.instance);
+        child1.put("name", "test");
+        context.put("$", "child", child1);
+        ObjectNode node2 = context.read("$");
+        ObjectNode child2 = context.read("$.child");
+
         assertThat(node1).isSameAs(node2);
         assertThat(child1).isSameAs(child2);
     }
@@ -68,6 +90,16 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
         assertThat(unwrapped).isEqualTo("string-value");
         assertThat(unwrapped).isEqualTo(node.asText());
     }
+
+    /*
+     * invalid
+     * 
+     * @Test public void strings_are_unwrapped_readLineageRoot() { JsonNode node =
+     * using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readLineageRoot("$.string-property"); String unwrapped =
+     * using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readLineageRoot("$.string-property", String.class);
+     * 
+     * assertThat(unwrapped).isEqualTo("string-value"); assertThat(unwrapped).isEqualTo(node.asText()); }
+     */
 
     @Test
     public void ints_are_unwrapped() {
@@ -98,6 +130,18 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void list_of_numbers_lineageRoot() {
+        ObjectNode root = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readRoot("$.store.book[*].display-price");
+        System.out.println("object " + root);
+
+        JsonNode store = root.get("store");
+        Assert.assertNotNull(store);
+        JsonNode book = store.get("book");
+        Assert.assertTrue(book.isArray());
+        Assert.assertTrue(book.size() == 4);
+    }
+
+    @Test
     public void test_type_ref() throws IOException {
         TypeRef<List<FooBarBaz<Gen>>> typeRef = new TypeRef<List<FooBarBaz<Gen>>>() {};
 
@@ -112,7 +156,7 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
 
         using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON).read("$", typeRef);
     }
-    
+
     @Test
     // https://github.com/json-path/JsonPath/issues/364
     public void setPropertyWithPOJO() {
@@ -161,7 +205,7 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     public static class Gen {
         public String eric;
     }
-    
+
     public static final class Data {
       @JsonProperty("id")
       UUID id;

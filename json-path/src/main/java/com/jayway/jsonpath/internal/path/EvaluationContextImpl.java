@@ -14,6 +14,15 @@
  */
 package com.jayway.jsonpath.internal.path;
 
+import static com.jayway.jsonpath.internal.Utils.notNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.EvaluationListener;
 import com.jayway.jsonpath.Option;
@@ -23,15 +32,6 @@ import com.jayway.jsonpath.internal.EvaluationContext;
 import com.jayway.jsonpath.internal.Path;
 import com.jayway.jsonpath.internal.PathRef;
 import com.jayway.jsonpath.spi.json.JsonProvider;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import static com.jayway.jsonpath.internal.Utils.notNull;
 
 /**
  *
@@ -49,6 +49,8 @@ public class EvaluationContextImpl implements EvaluationContext {
     private final HashMap<Path, Object> documentEvalCache = new HashMap<Path, Object>();
     private final boolean forUpdate;
     private int resultIndex = 0;
+    private Object root;
+    private Object parent;
 
 
     public EvaluationContextImpl(Path path, Object rootDocument, Configuration configuration, boolean forUpdate) {
@@ -62,6 +64,40 @@ public class EvaluationContextImpl implements EvaluationContext {
         this.valueResult = configuration.jsonProvider().createArray();
         this.pathResult = configuration.jsonProvider().createArray();
         this.updateOperations = new ArrayList<PathRef>();
+    }
+
+    void setRoot(Object root) {
+        this.root = root;
+    }
+
+    @Override
+    public <T> T getRoot(boolean unwrap) {
+        if (path.isDefinite()) {
+            if (root == null) {
+                throw new PathNotFoundException("No results for path: " + path.toString());
+            }
+            int len = jsonProvider().length(root);
+            Object value = root;
+            if (root != null && unwrap) {
+                value = jsonProvider().unwrap(root);
+            }
+            return (T) value;
+        }
+        return (T) root;
+
+    }
+
+    @Override
+    public <T> T getRoot() {
+        return (T) getRoot(true);
+    }
+
+    Object getParent() {
+        return parent;
+    }
+
+    void setParent(final Object parent) {
+        this.parent = parent;
     }
 
     public HashMap<Path, Object> documentEvalCache() {
@@ -111,6 +147,7 @@ public class EvaluationContextImpl implements EvaluationContext {
         return rootDocument;
     }
 
+    @Override
     public Collection<PathRef> updateOperations(){
 
         Collections.sort(updateOperations);

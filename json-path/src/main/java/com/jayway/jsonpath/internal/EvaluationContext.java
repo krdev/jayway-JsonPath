@@ -14,10 +14,10 @@
  */
 package com.jayway.jsonpath.internal;
 
-import com.jayway.jsonpath.Configuration;
-
 import java.util.Collection;
 import java.util.List;
+
+import com.jayway.jsonpath.Configuration;
 
 public interface EvaluationContext {
 
@@ -62,6 +62,13 @@ public interface EvaluationContext {
 
 
     /**
+     * Returns the root with all the descendants that match the jsonpath. Will add only the matching elements in the descendent.
+     *
+     * @return lineage root object
+     */
+    <T> T getRoot();
+
+    /**
      * Convenience method to get list of hits as String path representations
      *
      * @return list of path representations
@@ -69,5 +76,13 @@ public interface EvaluationContext {
     List<String> getPathList();
 
     Collection<PathRef> updateOperations();
+
+    /**
+     * Get the root of the json object with all the matching children. See {@link com.jayway.jsonpath.internal.EvaluationContext#getRoot()}
+     *
+     * @param unwrap tells the underlying json provider if primitives should be unwrapped
+     * @return The root with all matching sub elements
+     */
+    <T> T getRoot(boolean unwrap);
 
 }

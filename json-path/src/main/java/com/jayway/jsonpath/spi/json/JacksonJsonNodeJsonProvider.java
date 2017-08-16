@@ -1,14 +1,5 @@
 package com.jayway.jsonpath.spi.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.jayway.jsonpath.InvalidJsonException;
-import com.jayway.jsonpath.JsonPathException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,6 +8,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.jayway.jsonpath.InvalidJsonException;
+import com.jayway.jsonpath.JsonPathException;
 
 public class JacksonJsonNodeJsonProvider extends AbstractJsonProvider {
 
@@ -80,6 +80,7 @@ public class JacksonJsonNodeJsonProvider extends AbstractJsonProvider {
         return JsonNodeFactory.instance.objectNode();
     }
 
+    @Override
     public Object unwrap(Object o) {
 
         if (o == null) {
@@ -173,6 +174,7 @@ public class JacksonJsonNodeJsonProvider extends AbstractJsonProvider {
         }
 	}
 
+    @Override
     public void removeProperty(Object obj, Object key) {
         if (isMap(obj))
             toJsonObject(obj).remove(key.toString());

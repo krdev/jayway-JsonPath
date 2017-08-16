@@ -14,11 +14,6 @@
  */
 package com.jayway.jsonpath.spi.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.jayway.jsonpath.InvalidJsonException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +21,11 @@ import java.io.StringWriter;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.jayway.jsonpath.InvalidJsonException;
 
 public class JacksonJsonProvider extends AbstractJsonProvider {
 

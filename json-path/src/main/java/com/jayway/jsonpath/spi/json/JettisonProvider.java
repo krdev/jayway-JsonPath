@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.codehaus.jettison.json.JSONException;
+
 import com.jayway.jsonpath.InvalidJsonException;
 
 public class JettisonProvider extends AbstractJsonProvider
@@ -37,7 +38,7 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 		return obj;
 	}
-	
+
 	private static Object jettisonWrap(Object obj)
 	{
 		if( obj==null )
@@ -46,7 +47,7 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 		return obj;
 	}
-	
+
 	/** JSON Object implementation */
 	private static class JettisonTokener extends org.codehaus.jettison.json.JSONTokener
 	{
@@ -55,34 +56,34 @@ public class JettisonProvider extends AbstractJsonProvider
 			super(s);
 		}
 		@Override
-		protected JettisonObject newJSONObject() throws JSONException 
+		protected JettisonObject newJSONObject() throws JSONException
 		{
 			return new JettisonObject(this);
 		}
 		@Override
-		protected JettisonArray newJSONArray() throws JSONException 
+		protected JettisonArray newJSONArray() throws JSONException
 		{
 			return new JettisonArray(this);
 		}
 	}
-	
+
 	/** JSON Object implementation */
 	private static class JettisonObject extends org.codehaus.jettison.json.JSONObject implements Iterable<Object>
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		private JettisonObject(JettisonTokener tokener) throws JSONException
 		{
 			super(tokener);
 		}
-		
+
 		private JettisonObject()
 		{
 			super();
 		}
-		
+
 		@Override
-		public Iterator<Object> iterator() 
+		public Iterator<Object> iterator()
 		{
 			return new JettisonObjectIterator(this);
 		}
@@ -96,37 +97,37 @@ public class JettisonProvider extends AbstractJsonProvider
 		{
 			super(tokener);
 		}
-		
-		private JettisonArray() 
+
+		private JettisonArray()
 		{
 			super();
 		}
 
 		@Override
-		public Iterator<Object> iterator() 
+		public Iterator<Object> iterator()
 		{
 			return new JettisonArrayIterator(this);
 		}
 	}
-	
+
 	private static class JettisonArrayIterator implements Iterator<Object>
 	{
 		private final org.codehaus.jettison.json.JSONArray jsonArray;
 		private int index = 0;
-		
+
 		private JettisonArrayIterator(org.codehaus.jettison.json.JSONArray jsonArray)
 		{
 			this.jsonArray = jsonArray;
 		}
-		
+
 		@Override
-		public boolean hasNext() 
+		public boolean hasNext()
 		{
 			return index < jsonArray.length();
 		}
 
 		@Override
-		public Object next() 
+		public Object next()
 		{
 			try
 			{
@@ -139,33 +140,33 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 
 		@Override
-		public void remove() 
+		public void remove()
 		{
 			throw new UnsupportedOperationException();
 		}
-		
+
 	}
-	
+
 	private static class JettisonObjectIterator implements Iterator<Object>
 	{
 		private final org.codehaus.jettison.json.JSONObject jsonObject;
 		private final Iterator<?> jsonKeysIt;
-		
-		
+
+
 		private JettisonObjectIterator(org.codehaus.jettison.json.JSONObject jsonObject)
 		{
 			this.jsonObject = jsonObject;
 			this.jsonKeysIt = jsonObject.keys();
 		}
-		
+
 		@Override
-		public boolean hasNext() 
+		public boolean hasNext()
 		{
 			return jsonKeysIt.hasNext();
 		}
 
 		@Override
-		public Object next() 
+		public Object next()
 		{
 			try
 			{
@@ -178,24 +179,24 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 
 		@Override
-		public void remove() 
+		public void remove()
 		{
 			jsonKeysIt.remove();
 		}
-		
+
 	}
-	
+
 	private Object parse(JettisonTokener JsonTokener)
 	{
 		try
 		{
 			char nextChar = JsonTokener.nextClean();
 			JsonTokener.back();
-			if (nextChar == '{') 
+			if (nextChar == '{')
 			{
 				return new JettisonObject(JsonTokener);
 			}
-			if (nextChar == '[') 
+			if (nextChar == '[')
 			{
 				return new JettisonArray(JsonTokener);
 			}
@@ -206,13 +207,13 @@ public class JettisonProvider extends AbstractJsonProvider
 			throw new IllegalStateException(jsonException);
 		}
 	}
-	
+
 	@Override
-	public Object parse(String json) throws InvalidJsonException 
+	public Object parse(String json) throws InvalidJsonException
 	{
 		return parse(new JettisonTokener(json));
 	}
-	
+
 	@Override
 	public Object parse(InputStream jsonStream, String charset) throws InvalidJsonException
 	{
@@ -234,7 +235,7 @@ public class JettisonProvider extends AbstractJsonProvider
 	}
 
 	@Override
-	public String toJson(Object obj) 
+	public String toJson(Object obj)
 	{
 		try
 		{
@@ -256,37 +257,37 @@ public class JettisonProvider extends AbstractJsonProvider
 	}
 
 	@Override
-	public Object createMap() 
+	public Object createMap()
 	{
 		return new JettisonObject();
 	}
 
 	@Override
-	public Iterable<?> createArray() 
+	public Iterable<?> createArray()
 	{
 		return new JettisonArray();
 	}
-	
-	@Override 
+
+	@Override
 	public Object unwrap(Object obj)
 	{
 		return jettisonUnwrap(obj);
 	}
-	
+
 	@Override
-	public boolean isArray(Object obj) 
+	public boolean isArray(Object obj)
 	{
 		return obj instanceof org.codehaus.jettison.json.JSONArray;
 	}
-	
+
 	@Override
-	public boolean isMap(Object obj) 
+	public boolean isMap(Object obj)
 	{
 		return obj instanceof org.codehaus.jettison.json.JSONObject;
 	}
 
 	@Override
-	public int length(Object obj) 
+	public int length(Object obj)
 	{
 		if( obj instanceof org.codehaus.jettison.json.JSONArray )
 		{
@@ -304,12 +305,12 @@ public class JettisonProvider extends AbstractJsonProvider
 	}
 
 	@Override
-	public Iterable<?> toIterable(final Object obj) 
+	public Iterable<?> toIterable(final Object obj)
 	{
 		return new Iterable<Object>()
 		{
 			@Override
-			public Iterator<Object> iterator() 
+			public Iterator<Object> iterator()
 			{
 				if( obj instanceof org.codehaus.jettison.json.JSONArray )
 				{
@@ -325,10 +326,11 @@ public class JettisonProvider extends AbstractJsonProvider
 
 	}
 
-	public Collection<String> getPropertyKeys(Object obj) 
+	@Override
+    public Collection<String> getPropertyKeys(Object obj)
 	{
 		List<String> keys = new ArrayList<String>(length(obj));
-		
+
 		if( obj instanceof org.codehaus.jettison.json.JSONArray )
 		{
 			for (int i = 0; i < length(obj); i++)
@@ -346,21 +348,21 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 		return keys;
 	}
-	
-	
+
+
 	@Override
 	public Object getArrayIndex(Object obj, int index)
 	{
 		return jettisonUnwrap(((org.codehaus.jettison.json.JSONArray)obj).opt(index));
 	}
-	
+
 	@Override public void setArrayIndex(Object array, int index, Object value)
 	{
 		if( !isArray(array) )
 		{
 			throw new UnsupportedOperationException();
 		}
-		
+
 		try
 		{
 			((org.codehaus.jettison.json.JSONArray)array).put(index, jettisonWrap(value));
@@ -370,8 +372,8 @@ public class JettisonProvider extends AbstractJsonProvider
 			throw new IllegalArgumentException(jsonException);
 		}
 	}
-	
-	@Override 
+
+	@Override
 	public Object getMapValue(Object obj, String key)
 	{
 		Object value = ((org.codehaus.jettison.json.JSONObject)obj).opt(key);
@@ -381,9 +383,9 @@ public class JettisonProvider extends AbstractJsonProvider
 		}
 		return jettisonUnwrap(value);
 	}
-	
+
 	@Override
-	public void setProperty(Object obj, Object key, Object value) 
+	public void setProperty(Object obj, Object key, Object value)
 	{
 		try
 		{
@@ -402,7 +404,7 @@ public class JettisonProvider extends AbstractJsonProvider
 			throw new IllegalStateException(jsonException);
 		}
 	}
-	
+
 	@Override
 	public void removeProperty(Object obj, Object key)
 	{
@@ -428,5 +430,5 @@ public class JettisonProvider extends AbstractJsonProvider
 			throw new IllegalStateException(jsonException);
 		}
 	}
-	
+
 }

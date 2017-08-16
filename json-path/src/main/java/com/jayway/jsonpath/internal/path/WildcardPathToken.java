@@ -14,11 +14,11 @@
  */
 package com.jayway.jsonpath.internal.path;
 
+import static java.util.Arrays.asList;
+
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.internal.PathRef;
-
-import static java.util.Arrays.asList;
 
 /**
  *
@@ -35,6 +35,10 @@ public class WildcardPathToken extends PathToken {
                 handleObjectProperty(currentPath, model, ctx, asList(property));
             }
         } else if (ctx.jsonProvider().isArray(model)) {
+            /*
+             * Assert.assertNotNull(ctx.getCurrentProperty()); ctx.configuration().jsonProvider().setProperty(curr, ctx.getCurrentProperty(), arrObj);
+             * ctx.setLineageParent(arrObj);
+             */
             for (int idx = 0; idx < ctx.jsonProvider().length(model); idx++) {
                 try {
                     handleArrayIndex(idx, currentPath, model, ctx);

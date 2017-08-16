@@ -15,13 +15,11 @@
 package com.jayway.jsonpath;
 
 
-import com.jayway.jsonpath.internal.EvaluationContext;
-import com.jayway.jsonpath.internal.ParseContextImpl;
-import com.jayway.jsonpath.internal.Path;
-import com.jayway.jsonpath.internal.PathRef;
-import com.jayway.jsonpath.internal.Utils;
-import com.jayway.jsonpath.internal.path.PathCompiler;
-import com.jayway.jsonpath.spi.json.JsonProvider;
+import static com.jayway.jsonpath.Option.ALWAYS_RETURN_LIST;
+import static com.jayway.jsonpath.Option.AS_PATH_LIST;
+import static com.jayway.jsonpath.internal.Utils.isTrue;
+import static com.jayway.jsonpath.internal.Utils.notEmpty;
+import static com.jayway.jsonpath.internal.Utils.notNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,9 +27,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import static com.jayway.jsonpath.Option.ALWAYS_RETURN_LIST;
-import static com.jayway.jsonpath.Option.AS_PATH_LIST;
-import static com.jayway.jsonpath.internal.Utils.*;
+import com.jayway.jsonpath.internal.EvaluationContext;
+import com.jayway.jsonpath.internal.ParseContextImpl;
+import com.jayway.jsonpath.internal.Path;
+import com.jayway.jsonpath.internal.PathRef;
+import com.jayway.jsonpath.internal.Utils;
+import com.jayway.jsonpath.internal.path.PathCompiler;
+import com.jayway.jsonpath.spi.json.JsonProvider;
 
 /**
  * <p/>
@@ -692,6 +694,60 @@ public class JsonPath {
             return (T)evaluationContext.getPathList();
         } else {
             return (T) jsonObject;
+        }
+    }
+
+    /**
+     * Applies this JsonPath to the provided json document.
+     * Note that the document must be identified as either a List or Map by
+     * the {@link JsonProvider}
+     *
+     * @param jsonObject    a container Object
+     * @param configuration configuration to use
+     * @param <T>           expected return type
+     * @return object(s) matched by the given path
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T readRoot(Object jsonObject, Configuration configuration) {
+        configuration.setComputeRoot(true);
+        boolean optAsPathList = configuration.containsOption(AS_PATH_LIST);
+        boolean optAlwaysReturnList = configuration.containsOption(Option.ALWAYS_RETURN_LIST);
+        boolean optSuppressExceptions = configuration.containsOption(Option.SUPPRESS_EXCEPTIONS);
+
+        try {
+            if (path.isFunctionPath()) {
+                if (optAsPathList || optAlwaysReturnList) {
+                    throw new JsonPathException("Options " + AS_PATH_LIST + " and " + ALWAYS_RETURN_LIST + " are not allowed when using path functions!");
+                }
+                return path.evaluate(jsonObject, jsonObject, configuration).getRoot(true);
+
+            } else if (optAsPathList) {
+                return (T) path.evaluate(jsonObject, jsonObject, configuration).getPath();
+
+            } else {
+                Object res = path.evaluate(jsonObject, jsonObject, configuration).getRoot(false);
+                if (optAlwaysReturnList && path.isDefinite()) {
+                    Object array = configuration.jsonProvider().createArray();
+                    configuration.jsonProvider().setArrayIndex(array, 0, res);
+                    return (T) array;
+                } else {
+                    return (T) res;
+                }
+            }
+        } catch (RuntimeException e) {
+            if (!optSuppressExceptions) {
+                throw e;
+            } else {
+                if (optAsPathList) {
+                    return (T) configuration.jsonProvider().createArray();
+                } else {
+                    if (optAlwaysReturnList) {
+                        return (T) configuration.jsonProvider().createArray();
+                    } else {
+                        return (T) (path.isDefinite() ? null : configuration.jsonProvider().createArray());
+                    }
+                }
+            }
         }
     }
 }

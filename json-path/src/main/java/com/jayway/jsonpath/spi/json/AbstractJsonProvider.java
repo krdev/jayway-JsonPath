@@ -14,11 +14,11 @@
  */
 package com.jayway.jsonpath.spi.json;
 
-import com.jayway.jsonpath.JsonPathException;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import com.jayway.jsonpath.JsonPathException;
 
 public abstract class AbstractJsonProvider implements JsonProvider {
 
@@ -28,6 +28,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj object to check
      * @return true if obj is an array
      */
+    @Override
     public boolean isArray(Object obj) {
         return (obj instanceof List);
     }
@@ -39,14 +40,17 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param idx index
      * @return the entry at the given index
      */
+    @Override
     public Object getArrayIndex(Object obj, int idx) {
         return ((List) obj).get(idx);
     }
 
+    @Override
     public final Object getArrayIndex(Object obj, int idx, boolean unwrap){
         return getArrayIndex(obj, idx);
     }
 
+    @Override
     public void setArrayIndex(Object array, int index, Object newValue) {
         if (!isArray(array)) {
             throw new UnsupportedOperationException();
@@ -68,6 +72,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param key property key
      * @return the map entry or {@link com.jayway.jsonpath.spi.json.JsonProvider#UNDEFINED} for missing properties
      */
+    @Override
     public Object getMapValue(Object obj, String key){
         Map m = (Map) obj;
         if(!m.containsKey(key)){
@@ -84,6 +89,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param key   a String key
      * @param value the value to set
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void setProperty(Object obj, Object key, Object value) {
         if (isMap(obj))
@@ -101,6 +107,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj   an array or an object
      * @param key   a String key or a numerical index to remove
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void removeProperty(Object obj, Object key) {
         if (isMap(obj))
@@ -119,6 +126,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj object to check
      * @return true if the object is a map
      */
+    @Override
     public boolean isMap(Object obj) {
         return (obj instanceof Map);
     }
@@ -129,6 +137,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj an object
      * @return the keys for an object
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<String> getPropertyKeys(Object obj) {
         if (isArray(obj)) {
@@ -144,6 +153,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj an array or an object
      * @return the number of entries in the array or object
      */
+    @Override
     public int length(Object obj) {
         if (isArray(obj)) {
             return ((List) obj).size();
@@ -161,6 +171,7 @@ public abstract class AbstractJsonProvider implements JsonProvider {
      * @param obj an array
      * @return an Iterable that iterates over the entries of an array
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Iterable<? extends Object> toIterable(Object obj) {
         if (isArray(obj))
@@ -172,6 +183,17 @@ public abstract class AbstractJsonProvider implements JsonProvider {
     @Override
     public Object unwrap(Object obj) {
         return obj;
+    }
+
+    @Override
+    public Object copy(Object obj) {
+        Object ret = null;
+        if (isArray(obj)) {
+            ret = createArray();
+        } else if (isMap(obj)) {
+            ret = createMap();
+        }
+        return ret;
     }
 
 }
