@@ -1,8 +1,12 @@
 package com.jayway.jsonpath.spi.json;
 
-import org.json.JSONObject;
-import com.jayway.jsonpath.InvalidJsonException;
-import com.jayway.jsonpath.JsonPathException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,12 +14,8 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.jayway.jsonpath.InvalidJsonException;
+import com.jayway.jsonpath.JsonPathException;
 
 public class JsonOrgJsonProvider extends AbstractJsonProvider {
 
@@ -131,6 +131,7 @@ public class JsonOrgJsonProvider extends AbstractJsonProvider {
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void removeProperty(Object obj, Object key) {
         if (isMap(obj))

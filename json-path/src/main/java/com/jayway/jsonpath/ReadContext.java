@@ -121,4 +121,17 @@ public interface ReadContext {
      */
     ReadContext withListeners(EvaluationListener... listener);
 
+
+    /**
+     * Reads the given path from this context and returns the root object, every object from the root to the leaf will be matched
+     *
+     * @param paths array of paths to read
+     * @param type expected return type (will try to map)
+     * @param filters filters
+     * @param <T>
+     * @return result
+     */
+    <T> T readRoot(String[] paths, Predicate... filters);
+
+
 }

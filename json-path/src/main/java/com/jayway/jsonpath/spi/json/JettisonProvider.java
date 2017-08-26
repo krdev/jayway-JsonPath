@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.codehaus.jettison.json.JSONException;
+
 import com.jayway.jsonpath.InvalidJsonException;
 
 public class JettisonProvider extends AbstractJsonProvider

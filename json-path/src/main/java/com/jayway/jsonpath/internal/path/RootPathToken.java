@@ -56,9 +56,29 @@ public class RootPathToken extends PathToken {
     @Override
     public void evaluate(String currentPath, PathRef pathRef, Object model, EvaluationContextImpl ctx) {
         if (isLeaf()) {
-            PathRef op = ctx.forUpdate() ?  pathRef : PathRef.NO_OP;
+            PathRef op = ctx.forUpdate() ? pathRef : PathRef.NO_OP;
+            if (ctx.configuration().getComputeRoot()) {
+
+                // KR ok to overwrite root here
+                ctx.setRoot(model);
+                ctx.setParent(model);
+            }
+
             ctx.addResult(rootToken, op, model);
         } else {
+
+            if (ctx.configuration().getComputeRoot()) {
+                Object root;
+                if (null != ctx.getRoot()) {
+                    root = ctx.getRoot();
+                } else {
+                    root = ctx.configuration().jsonProvider().copy(model);
+                }
+
+                ctx.setRoot(root);
+                ctx.setParent(root);
+            }
+
             next().evaluate(rootToken, pathRef, model, ctx);
         }
     }

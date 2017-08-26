@@ -1,13 +1,14 @@
 package com.jayway.jsonpath.spi.json;
 
-import com.jayway.jsonpath.InvalidJsonException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Scanner;
+
 import org.apache.tapestry5.json.JSONArray;
 import org.apache.tapestry5.json.JSONCollection;
 import org.apache.tapestry5.json.JSONObject;
 
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Scanner;
+import com.jayway.jsonpath.InvalidJsonException;
 
 public class TapestryJsonProvider extends AbstractJsonProvider {
 

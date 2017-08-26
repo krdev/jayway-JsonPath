@@ -15,6 +15,7 @@
 package com.jayway.jsonpath.internal;
 
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.internal.path.EvaluationContextImpl;
 
 /**
  *
@@ -60,5 +61,17 @@ public interface Path {
      * @return true id this path is starts with '$' and false if the path starts with '@'
      */
     boolean isRootPath();
+
+    /**
+     * Evaluates this path
+     *
+     * @param root obeject that matches the previos path
+     * @param document the json document to apply the path on
+     * @param rootDocument the root json document that started this evaluation
+     * @param configuration configuration to use
+     * @param forUpdate is this a read or a write operation
+     * @return EvaluationContextImpl containing results of evaluation
+     */
+    EvaluationContextImpl evaluate(Object root, Object document, Object rootDocument, Configuration configuration);
 
 }

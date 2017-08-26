@@ -14,12 +14,12 @@
  */
 package com.jayway.jsonpath.internal;
 
-import com.jayway.jsonpath.JsonPathException;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Iterator;
+
+import com.jayway.jsonpath.JsonPathException;
 
 public final class Utils {
 
@@ -42,6 +42,18 @@ public final class Utils {
         return join(delimiter, "", objs);
     }
 
+    public static String getProperty(final String val) {
+        String ret = null;
+        int idx1 = val.indexOf("['");
+        if (-1 != idx1) {
+            String suf = val.substring(idx1 + 2);
+            int idx2 = suf.indexOf("']");
+            if (-1 != idx2) {
+                ret = suf.substring(0, idx2);
+            }
+        }
+        return ret;
+    }
     public static String concat(CharSequence... strings) {
         if (strings.length == 0) {
             return "";

@@ -1,11 +1,15 @@
 package com.jayway.jsonpath;
 
-import org.junit.Test;
+import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 
-import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JacksonTest extends BaseTest {
 
@@ -52,6 +56,24 @@ public class JacksonTest extends BaseTest {
         final Object readFromSingleQuote = JsonPath.using(JACKSON_CONFIGURATION).parse(jsonArray).read("$.[?(@.foo in ['bar'])].foo");
         final Object readFromDoubleQuote = JsonPath.using(JACKSON_CONFIGURATION).parse(jsonArray).read("$.[?(@.foo in [\"bar\"])].foo");
         assertThat(readFromSingleQuote).isEqualTo(readFromDoubleQuote);
+
+    }
+
+    @Test
+    public void testShallowCopy() throws JsonProcessingException {
+        ObjectMapper m = new ObjectMapper();
+        ObjectNode n1 = m.createObjectNode();
+        n1.put("myInt", 23);
+        ObjectNode n2 = m.createObjectNode();
+        n2.put("name", "adam");
+        n2.put("age", "33");
+        n1.put("person", n2);
+
+        System.out.println(" -- " + m.writeValueAsString(n1));
+        ObjectNode n3 = n1.deepCopy();
+        System.out.println(" -- " + m.writeValueAsString(n3));
+        ((ObjectNode) n3.get("person")).retain();
+        System.out.println(" -- " + m.writeValueAsString(n3));
 
     }
 

@@ -14,6 +14,8 @@
  */
 package com.jayway.jsonpath.internal.path;
 
+import java.util.List;
+
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.internal.PathRef;
@@ -21,15 +23,12 @@ import com.jayway.jsonpath.internal.Utils;
 import com.jayway.jsonpath.internal.function.PathFunction;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
-import java.util.List;
-
 public abstract class PathToken {
 
     private PathToken prev;
     private PathToken next;
     private Boolean definite = null;
     private Boolean upstreamDefinite = null;
-
     PathToken appendTailToken(PathToken next) {
         this.next = next;
         this.next.prev = this;
@@ -40,6 +39,7 @@ public abstract class PathToken {
 
         if(properties.size() == 1) {
             String property = properties.get(0);
+
             String evalPath = Utils.concat(currentPath, "['", property, "']");
             Object propertyVal = readObjectProperty(property, model, ctx);
             if(propertyVal == JsonProvider.UNDEFINED){
@@ -73,12 +73,43 @@ public abstract class PathToken {
                     }
                 }
             }
+
             PathRef pathRef = ctx.forUpdate() ? PathRef.create(model, property) : PathRef.NO_OP;
             if (isLeaf()) {
+                if (ctx.configuration().getComputeRoot()) {
+                    ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                }
                 ctx.addResult(evalPath, pathRef, propertyVal);
-            }
-            else {
+            } else {
+
+                Object prev = ctx.getParent();
+                Object curr = null;
+                if (ctx.configuration().getComputeRoot()) {
+                    // handle all types
+                    if (ctx.configuration().jsonProvider().isMap(propertyVal)) {
+                        curr = ctx.configuration().jsonProvider().createMap();
+                    } else if (ctx.configuration().jsonProvider().isArray(propertyVal)) {
+                        curr = ctx.configuration().jsonProvider().createArray();
+                    } else {
+                        throw new IllegalArgumentException("unknown type");
+                    }
+                    ctx.configuration().jsonProvider().setProperty(prev, property, curr);
+                    ctx.setParent(curr);
+                }
+
                 next().evaluate(evalPath, pathRef, propertyVal, ctx);
+
+                if (ctx.configuration().getComputeRoot()) {
+                    if (prev != curr) {
+                        // if newly cerated object is empty just remove it from parent
+                        if (ctx.configuration().jsonProvider().isMap(curr) || ctx.configuration().jsonProvider().isArray(curr)) {
+                            if (ctx.configuration().jsonProvider().length(curr) == 0) {
+                                ctx.configuration().jsonProvider().removeProperty(prev, property);
+                            }
+                        }
+                    }
+                    ctx.setParent(prev);
+                }
             }
         } else {
             String evalPath = currentPath + "[" + Utils.join(", ", "'", properties) + "]";
@@ -88,17 +119,17 @@ public abstract class PathToken {
             Object merged = ctx.jsonProvider().createMap();
             for (String property : properties) {
                 Object propertyVal;
-                if(hasProperty(property, model, ctx)) {
+                if (hasProperty(property, model, ctx)) {
                     propertyVal = readObjectProperty(property, model, ctx);
-                    if(propertyVal == JsonProvider.UNDEFINED){
-                        if(ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL)) {
+                    if (propertyVal == JsonProvider.UNDEFINED) {
+                        if (ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL)) {
                             propertyVal = null;
                         } else {
                             continue;
                         }
                     }
                 } else {
-                    if(ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL)){
+                    if (ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL)) {
                         propertyVal = null;
                     } else if (ctx.options().contains(Option.REQUIRE_PROPERTIES)) {
                         throw new PathNotFoundException("Missing property in path " + evalPath);
@@ -106,9 +137,14 @@ public abstract class PathToken {
                         continue;
                     }
                 }
+
+                if (ctx.configuration().getComputeRoot()) {
+                    ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                }
                 ctx.jsonProvider().setProperty(merged, property, propertyVal);
             }
             PathRef pathRef = ctx.forUpdate() ? PathRef.create(model, properties) : PathRef.NO_OP;
+
             ctx.addResult(evalPath, pathRef, merged);
         }
     }
@@ -121,6 +157,17 @@ public abstract class PathToken {
         return ctx.jsonProvider().getMapValue(model, property);
     }
 
+    private void checkAndFillArrayElements(EvaluationContextImpl ctx, Object parent, Object evalHit, int effectiveIndex) {
+        Object copy = ctx.jsonProvider().copy(evalHit);
+        int len = ctx.jsonProvider().length(parent);
+        // fill dummy array elements
+        if (len < effectiveIndex) {
+            for (int i = len; i < effectiveIndex; i++) {
+                ctx.jsonProvider().setArrayIndex(parent, i, copy);
+            }
+        }
+        ctx.jsonProvider().setArrayIndex(ctx.getParent(), effectiveIndex, evalHit);
+    }
 
     protected void handleArrayIndex(int index, String currentPath, Object model, EvaluationContextImpl ctx) {
         String evalPath = Utils.concat(currentPath, "[", String.valueOf(index), "]");
@@ -129,9 +176,39 @@ public abstract class PathToken {
         try {
             Object evalHit = ctx.jsonProvider().getArrayIndex(model, effectiveIndex);
             if (isLeaf()) {
+
+                if (ctx.configuration().getComputeRoot()) {
+                    checkAndFillArrayElements(ctx, ctx.getParent(), evalHit, effectiveIndex);
+                }
                 ctx.addResult(evalPath, pathRef, evalHit);
             } else {
+
+                // array that is not a leaf
+                Object old = ctx.getParent();
+                Object curr = null;
+                if (ctx.configuration().getComputeRoot()) {
+                    curr = (ctx.configuration().jsonProvider().length(old) > effectiveIndex
+                            ? ctx.configuration().jsonProvider().getArrayIndex(old, effectiveIndex) : null);
+                    if (null == curr) {
+                        curr = ctx.configuration().jsonProvider().createMap();
+                        checkAndFillArrayElements(ctx, old, curr, effectiveIndex);
+                        // ctx.configuration().jsonProvider().setArrayIndex(old, effectiveIndex, curr);
+                    }
+                    ctx.setParent(curr);
+                }
                 next().evaluate(evalPath, pathRef, evalHit, ctx);
+
+                if (ctx.configuration().getComputeRoot()) {
+                    if (old != curr) {
+                        // if newly cerated object is empty just remove it from parent
+                        if (ctx.configuration().jsonProvider().isMap(curr) && ctx.configuration().jsonProvider().length(curr) == 0) {
+                            ctx.configuration().jsonProvider().removeProperty(old, new Integer(effectiveIndex));
+                        } else if (ctx.configuration().jsonProvider().isArray(curr) && ctx.configuration().jsonProvider().length(curr) == 0) {
+                            ctx.configuration().jsonProvider().removeProperty(old, new Integer(effectiveIndex));
+                        }
+                    }
+                    ctx.setParent(old);
+                }
             }
         } catch (IndexOutOfBoundsException e) {
         }

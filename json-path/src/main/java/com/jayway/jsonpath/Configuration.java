@@ -14,9 +14,8 @@
  */
 package com.jayway.jsonpath;
 
-import com.jayway.jsonpath.internal.DefaultsImpl;
-import com.jayway.jsonpath.spi.json.JsonProvider;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import static com.jayway.jsonpath.internal.Utils.notNull;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +24,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static com.jayway.jsonpath.internal.Utils.notNull;
-import static java.util.Arrays.asList;
+import com.jayway.jsonpath.internal.DefaultsImpl;
+import com.jayway.jsonpath.spi.json.JsonProvider;
+import com.jayway.jsonpath.spi.mapper.MappingProvider;
 
 /**
  * Immutable configuration object
@@ -56,6 +56,8 @@ public class Configuration {
     private final Set<Option> options;
     private final Collection<EvaluationListener> evaluationListeners;
 
+    private boolean computeRoot;
+
     private Configuration(JsonProvider jsonProvider, MappingProvider mappingProvider, EnumSet<Option> options, Collection<EvaluationListener> evaluationListeners) {
         notNull(jsonProvider, "jsonProvider can not be null");
         notNull(mappingProvider, "mappingProvider can not be null");
@@ -65,6 +67,24 @@ public class Configuration {
         this.mappingProvider = mappingProvider;
         this.options = Collections.unmodifiableSet(options);
         this.evaluationListeners = Collections.unmodifiableCollection(evaluationListeners);
+    }
+
+    /**
+     * If Root object should be computed instead of just the matching children.
+     *
+     * @param computeRoot set to true if root object should be computed
+     */
+    public void setComputeRoot(final boolean computeRoot) {
+        this.computeRoot = computeRoot;
+    }
+
+    /**
+     * Return if root object should be computed for this json object.
+     * 
+     * @return true if root object should be computed
+     */
+    public boolean getComputeRoot() {
+        return computeRoot;
     }
 
     /**

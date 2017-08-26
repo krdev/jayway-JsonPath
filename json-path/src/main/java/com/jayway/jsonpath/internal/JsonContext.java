@@ -14,6 +14,17 @@
  */
 package com.jayway.jsonpath.internal;
 
+import static com.jayway.jsonpath.JsonPath.compile;
+import static com.jayway.jsonpath.internal.Utils.notEmpty;
+import static com.jayway.jsonpath.internal.Utils.notNull;
+import static java.util.Arrays.asList;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.EvaluationListener;
@@ -23,18 +34,9 @@ import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.Predicate;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.TypeRef;
+import com.jayway.jsonpath.internal.path.EvaluationContextImpl;
 import com.jayway.jsonpath.spi.cache.Cache;
 import com.jayway.jsonpath.spi.cache.CacheProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import static com.jayway.jsonpath.JsonPath.compile;
-import static com.jayway.jsonpath.internal.Utils.notEmpty;
-import static com.jayway.jsonpath.internal.Utils.notNull;
-import static java.util.Arrays.asList;
 
 public class JsonContext implements DocumentContext {
 
@@ -91,6 +93,44 @@ public class JsonContext implements DocumentContext {
 
     }
 
+    /*
+     *
+     * @Override public Object readRoot(String path, Predicate... filters) { notEmpty(path, "path can not be null or empty"); Cache cache =
+     * CacheProvider.getCache();
+     *
+     * path = path.trim(); LinkedList filterStack = new LinkedList<Predicate>(asList(filters)); String cacheKey = Utils.concat(path,
+     * filterStack.toString());
+     *
+     * JsonPath jsonPath = cache.get(cacheKey); if (jsonPath != null) { return jsonPath.readRoot(json, configuration); } else { jsonPath =
+     * compile(path, filters); cache.put(cacheKey, jsonPath); return jsonPath.readRoot(json, configuration); } }
+     *
+     */
+
+    @Override
+    public Object readRoot(String[] paths, Predicate... filters) {
+        if (null == paths || paths.length == 0) {
+            throw new IllegalArgumentException();
+        }
+        final Cache cache = CacheProvider.getCache();
+        final List<Predicate> filterStack = new LinkedList<Predicate>(asList(filters));
+        ;
+        EvaluationContextImpl ret = null;
+        Object rootObj = null;
+
+        for (String path : paths) {
+            path = path.trim();
+            String cacheKey = Utils.concat(path, filterStack.toString());
+
+            JsonPath jsonPath = cache.get(cacheKey);
+            if (jsonPath == null) {
+                jsonPath = compile(path, filters);
+                cache.put(cacheKey, jsonPath);
+            }
+            ret = jsonPath.readRoot(rootObj, json, configuration);
+        }
+        return ret.getRoot();
+    }
+
     @Override
     public <T> T read(String path, Class<T> type, Predicate... filters) {
         return convert(read(path, filters), type, configuration);
@@ -117,10 +157,12 @@ public class JsonContext implements DocumentContext {
         return convert(read(path), type, configuration);
     }
 
+    @Override
     public ReadContext limit(int maxResults){
         return withListeners(new LimitingEvaluationListener(maxResults));
     }
 
+    @Override
     public ReadContext withListeners(EvaluationListener... listener){
         return new JsonContext(json, configuration.setEvaluationListeners(listener));
     }
@@ -243,4 +285,5 @@ public class JsonContext implements DocumentContext {
             }
         }
     }
+
 }

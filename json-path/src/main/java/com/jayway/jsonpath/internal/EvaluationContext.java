@@ -14,10 +14,10 @@
  */
 package com.jayway.jsonpath.internal;
 
-import com.jayway.jsonpath.Configuration;
-
 import java.util.Collection;
 import java.util.List;
+
+import com.jayway.jsonpath.Configuration;
 
 public interface EvaluationContext {
 
@@ -69,5 +69,12 @@ public interface EvaluationContext {
     List<String> getPathList();
 
     Collection<PathRef> updateOperations();
+
+    /**
+     * Get the root of the json object with all the matching children. See {@link com.jayway.jsonpath.internal.EvaluationContext#getRoot()}
+     *
+     * @return The root with all matching sub elements
+     */
+    Object getRoot();
 
 }
