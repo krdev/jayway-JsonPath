@@ -118,7 +118,6 @@ public class CompiledPath implements Path {
             root.evaluate("", op, document, ctx);
         } catch (EvaluationAbortException abort) {
         }
-        ;
 
         return ctx;
     }

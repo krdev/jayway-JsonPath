@@ -1,0 +1,193 @@
+{
+  "@id": "_:15ae42c4-e225-45c7-81b1-05555146b096",
+  "@type": "ReservationPackage",
+  "identifier": [
+    {
+      "@type": "PropertyValue",
+      "propertyID": "cardDate",
+      "value": "$.subReservation[0].reservationFor.departureTime"
+    }
+  ],
+  "subReservation": [
+    {
+      "@id": "_:912219d6-0fb2-4bad-83aa-e83c163d99b0",
+      "@type": "FlightReservation",
+      "bookingTime": "2017-03-07T00:00:00Z",
+      "provider": {
+        "@id": "_:bb34a21d-f6c9-4e10-927c-9211337f61b9",
+        "@type": "Organization",
+        "image": {
+          "@type": "URL",
+          "@value": "https://static.cdn.responsys.net/i2/responsysimages/swair/contentlibrary/RTMS_SHARED_IMAGES/hprj_header_logo.gif"
+        },
+        "name": "southwest.com",
+        "url": {
+          "@type": "URL",
+          "@value": "http://www.southwest.com"
+        },
+        "identifier": [
+          {
+            "@type": "PropertyValue",
+            "propertyID": "searchTerms",
+            "value": "southwest south west"
+          }
+        ]
+      },
+      "reservationFor": {
+        "@id": "_:9d50cc52-b2ff-46c4-b131-4ef2ac72881d",
+        "@type": "Flight",
+        "arrivalAirport": {
+          "@id": "_:0bce9885-2389-48dc-9e6d-81ddafaaf2f9",
+          "@type": "Airport",
+          "iataCode": "DAL",
+          "identifier": [
+            {
+              "@type": "PropertyValue",
+              "propertyID": "searchTerms",
+              "value": "dallas ft worth texas"
+            }
+          ]
+        },
+        "arrivalTime": "2017-03-21T20:30:00Z",
+        "departureAirport": {
+          "@id": "_:be029eb9-a63b-4160-8420-40dc5d269242",
+          "@type": "Airport",
+          "iataCode": "SFO",
+          "name": "SANFRANCISCO,CA",
+          "identifier": [
+            {
+              "@type": "PropertyValue",
+              "propertyID": "searchTerms",
+              "value": "sfo san francisco bay area"
+            }
+          ]
+        },
+        "departureTime": "2017-03-21T15:05:00Z",
+        "flightNumber": "1993",
+        "actualArrivalTime": "2017-03-21T23:05:00Z",
+        "actualDepartureTime": "2017-03-21T23:05:00Z",
+        "departureTerminal": "1",
+        "departureGate": "",
+        "arrivalTerminal": "3",
+        "arrivalGate": "43",
+        "identifier": [
+          {
+            "@type": "PropertyValue",
+            "propertyID": "searchTerms",
+            "value": "1993 flight"
+          },
+          {
+            "@type": "PropertyValue",
+            "propertyID": "changes",
+            "value": [
+              {
+                "field": "$.subReservation[0].reservationFor.actualDepartureTime"
+              },
+              {
+                "field": "$.subReservation[0].reservationFor.actualArrivalTime"
+              }
+            ]
+          },
+          {
+            "@type": "PropertyValue",
+            "propertyID": "iosShortPayload",
+            "value": [
+              {
+                "field": "$.subReservation[0].reservationFor.@type"
+              },
+              {
+                "field": "$.subReservation[0].reservationFor.flightNumber"
+              },
+              {
+                "field": "$.subReservation[0].reservationFor.departureAirport"
+              },
+              {
+                "field": "$.subReservation[0].reservationFor.arrivalAirport"
+              }
+            ]
+          }
+        ],
+        "provider": {
+          "@id": "_:73ff79fe-1acf-47ce-9fb7-43e172f5682b",
+          "@type": "Airline",
+          "name": "Southwest Airlines",
+          "identifier": [
+            {
+              "@type": "PropertyValue",
+              "propertyID": "searchTerms",
+              "value": "southwest south west"
+            }
+          ]
+        },
+        "potentialAction": {
+          "@type": "updateAction",
+          "target": [
+            "http://xmp.mail.yahoo.com/r/0/1111",
+            {
+              "@type": "EntryPoint",
+              "contentType": "application/json",
+              "httpMethod": "POST",
+              "object": {
+                "@id": "1993",
+                "departureTime": "2017-03-21T15:05:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "reservationId": "FOOFOO",
+      "reservationStatus": "https://schema.org/ReservationConfirmed",
+      "reservedTicket": [
+        {
+          "@id": "_:4022e90b-0360-4a53-9cde-9c98a9feec1f",
+          "@type": "Ticket",
+          "ticketNumber": "5262493098501",
+          "identifier": [
+            {
+              "@type": "PropertyValue",
+              "propertyID": "searchTerms",
+              "value": "5262493098501 ticket"
+            }
+          ]
+        }
+      ],
+      "underName": [
+        {
+          "@id": "_:0e9ece97-c6b7-4774-9cbf-7d4db57ba415",
+          "@type": "Person",
+          "name": "Doe/John",
+          "identifier": [
+            {
+              "@type": "PropertyValue",
+              "propertyID": "searchTerms",
+              "value": "doe john"
+            }
+          ]
+        }
+      ],
+      "potentialAction": {
+        "@type": "ScheduleAction",
+        "object": {
+          "@type": "DateTime",
+          "name": "Flight Departure time"
+        },
+        "scheduledTimes": [
+          "2017-03-20T15:05:00Z",
+          "2017-03-21T10:05:00Z"
+        ],
+        "target": [
+          "http://xmp.mail.yahoo.com/r/7/92205",
+          {
+            "@type": "EntryPoint",
+            "contentType": "application/json",
+            "httpMethod": "POST",
+            "object": {
+              "@type": "jediCallback",
+              "@id": "$id"
+            }
+          }
+        ]
+      }
+    }
+  ]
+ }

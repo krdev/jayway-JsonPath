@@ -2,8 +2,10 @@ apply plugin: "maven"
 
 def basePom = {
     project {
+        groupId 'com.github.lafa.jsonpath'
+        artifactId 'json-path'
         name project.displayName
-        packaging 'bundle'
+        packaging 'jar'
         description project.description
         url 'https://github.com/lafaspot/JsonPath'
        
@@ -18,28 +20,29 @@ def basePom = {
         }
 
         scm {
-            url 'scm:git:git://github.com/lafaspot/JsonPath.git'
-            connection 'scm:git:git://github.com/lafaspot/JsonPath.git'
-            developerConnection 'scm:git:git://github.com/lafaspot/JsonPath.git'
+            developerConnection 'scm:git:https://github.com/lafaspot/JsonPath.git'
+            connection 'scm:git:https://github.com/lafaspot/JsonPath.git'
+            url 'https://github.com/lafaspot/JsonPath.git'
+            tag 'jsonpath-.1'
         }
 
-        developers {[
+        developers {
             developer {
                 id 'kalle.stenflo'
                 name 'Kalle Stenflo'
                 email 'kalle.stenflo (a) gmail.com'
-            },
+            }
             developer {
-                id 'krdev'
+                id 'kraman'
                 name 'Kumar Raman'
-                email 'kumar.raman (a) yahoo.com'
-            },
+                email 'kumar.raman@yahoo.com'
+            }
             developer {
                 id 'lafa'
                 name 'Luis Alves'
-                email 'luis.alves (a) lafaspot.com'
+                email 'luis.alves@lafaspot.com'
             }
-            ]
+            
         }
     }
 }

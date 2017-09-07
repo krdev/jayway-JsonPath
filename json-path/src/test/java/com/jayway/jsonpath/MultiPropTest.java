@@ -4,9 +4,13 @@ import static com.jayway.jsonpath.JsonPath.using;
 import static com.jayway.jsonpath.TestUtils.assertEvaluationThrows;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -198,5 +202,21 @@ public class MultiPropTest {
 
         assertThat(using(conf).parse(json).read("$['a', 'c'].v")).asList().containsOnly(5, 1);
         assertEvaluationThrows(json, "$['d', 'a', 'c', 'm'].v", PathNotFoundException.class, conf);
+    }
+
+    @Test
+    public void testIosShortPayloadBasicFlightReservation() throws IOException {
+        final InputStream jsonStream = this.getClass().getClassLoader().getResourceAsStream("basicFlightReservation.json");
+        final String schemaJson = IOUtils.toString(jsonStream, StandardCharsets.UTF_8);
+        final String jsonPathArr[] = new String[] { "$.subReservation[0].reservationFor.@type", "$.subReservation[0].reservationFor.flightNumber",
+                "$.subReservation[0].reservationFor.departureAirport", "$.subReservation[0].reservationFor.arrivalAirport" };
+
+        Configuration conf = Configuration.defaultConfiguration();
+        Object root = using(conf).parse(schemaJson).readRoot(jsonPathArr);
+        Assert.assertNotNull(root);
+        Assert.assertTrue(conf.jsonProvider().isMap(root));
+
+        // TODO KR - verify root element individually
+
     }
 }

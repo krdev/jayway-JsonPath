@@ -34,7 +34,6 @@ import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.Predicate;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.TypeRef;
-import com.jayway.jsonpath.internal.path.EvaluationContextImpl;
 import com.jayway.jsonpath.spi.cache.Cache;
 import com.jayway.jsonpath.spi.cache.CacheProvider;
 
@@ -114,7 +113,7 @@ public class JsonContext implements DocumentContext {
         final Cache cache = CacheProvider.getCache();
         final List<Predicate> filterStack = new LinkedList<Predicate>(asList(filters));
         ;
-        EvaluationContextImpl ret = null;
+        Object ret = null;
         Object rootObj = null;
 
         for (String path : paths) {
@@ -127,8 +126,9 @@ public class JsonContext implements DocumentContext {
                 cache.put(cacheKey, jsonPath);
             }
             ret = jsonPath.readRoot(rootObj, json, configuration);
+            rootObj = ret;
         }
-        return ret.getRoot();
+        return ret;
     }
 
     @Override

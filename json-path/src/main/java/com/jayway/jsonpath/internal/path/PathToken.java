@@ -77,7 +77,9 @@ public abstract class PathToken {
             PathRef pathRef = ctx.forUpdate() ? PathRef.create(model, property) : PathRef.NO_OP;
             if (isLeaf()) {
                 if (ctx.configuration().getComputeRoot()) {
-                    ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                    if (null == ctx.configuration().jsonProvider().getProperty(ctx.getParent(), property)) {
+                        ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                    }
                 }
                 ctx.addResult(evalPath, pathRef, propertyVal);
             } else {
@@ -85,15 +87,18 @@ public abstract class PathToken {
                 Object prev = ctx.getParent();
                 Object curr = null;
                 if (ctx.configuration().getComputeRoot()) {
-                    // handle all types
-                    if (ctx.configuration().jsonProvider().isMap(propertyVal)) {
-                        curr = ctx.configuration().jsonProvider().createMap();
-                    } else if (ctx.configuration().jsonProvider().isArray(propertyVal)) {
-                        curr = ctx.configuration().jsonProvider().createArray();
-                    } else {
-                        throw new IllegalArgumentException("unknown type");
+                    curr = ctx.configuration().jsonProvider().getProperty(prev, property);
+                    if (null == curr) {
+                        // handle all types
+                        if (ctx.configuration().jsonProvider().isMap(propertyVal)) {
+                            curr = ctx.configuration().jsonProvider().createMap();
+                        } else if (ctx.configuration().jsonProvider().isArray(propertyVal)) {
+                            curr = ctx.configuration().jsonProvider().createArray();
+                        } else {
+                            throw new IllegalArgumentException("unknown type");
+                        }
+                        ctx.configuration().jsonProvider().setProperty(prev, property, curr);
                     }
-                    ctx.configuration().jsonProvider().setProperty(prev, property, curr);
                     ctx.setParent(curr);
                 }
 
@@ -139,7 +144,9 @@ public abstract class PathToken {
                 }
 
                 if (ctx.configuration().getComputeRoot()) {
-                    ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                    if (null == ctx.configuration().jsonProvider().getProperty(ctx.getParent(), property)) {
+                        ctx.configuration().jsonProvider().setProperty(ctx.getParent(), property, propertyVal);
+                    }
                 }
                 ctx.jsonProvider().setProperty(merged, property, propertyVal);
             }
@@ -157,6 +164,7 @@ public abstract class PathToken {
         return ctx.jsonProvider().getMapValue(model, property);
     }
 
+    // TODO KR optimize
     private void checkAndFillArrayElements(EvaluationContextImpl ctx, Object parent, Object evalHit, int effectiveIndex) {
         Object copy = ctx.jsonProvider().copy(evalHit);
         int len = ctx.jsonProvider().length(parent);

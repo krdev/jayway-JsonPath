@@ -50,7 +50,7 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
 
     @Test
     public void json_can_be_parsed_readLineageRoot() {
-        ObjectNode node = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readRoot(new String[] { "$" });
+        ObjectNode node = (ObjectNode) using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readRoot(new String[] { "$" });
         assertThat(node.get("string-property").asText()).isEqualTo("string-value");
     }
 
@@ -71,7 +71,7 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     @Test
     public void always_return_same_object_readLineageRoot() { // Test because of Bug #211
         DocumentContext context = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT);
-        ObjectNode node1 = context.readRoot(new String[] { "$" });
+        ObjectNode node1 = (ObjectNode) context.readRoot(new String[] { "$" });
         ObjectNode child1 = new ObjectNode(JsonNodeFactory.instance);
         child1.put("name", "test");
         context.put("$", "child", child1);
@@ -131,7 +131,8 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
 
     @Test
     public void list_of_numbers_lineageRoot() {
-        ObjectNode root = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT).readRoot(new String[] { "$.store.book[*].display-price" });
+        ObjectNode root = (ObjectNode) using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT)
+                .readRoot(new String[] { "$.store.book[*].display-price" });
         System.out.println("object " + root);
 
         JsonNode store = root.get("store");

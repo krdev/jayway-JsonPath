@@ -32,7 +32,6 @@ import com.jayway.jsonpath.internal.ParseContextImpl;
 import com.jayway.jsonpath.internal.Path;
 import com.jayway.jsonpath.internal.PathRef;
 import com.jayway.jsonpath.internal.Utils;
-import com.jayway.jsonpath.internal.path.EvaluationContextImpl;
 import com.jayway.jsonpath.internal.path.PathCompiler;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
@@ -703,17 +702,15 @@ public class JsonPath {
      * Applies this JsonPath to the provided json document. Note that the document must be identified as either a List or Map by the
      * {@link JsonProvider}
      *
-     * @param ctx the evaluation context
      * @param jsonObject a container Object
      * @param configuration configuration to use
-     * @param <T> expected return type
      * @return the root object matched by the given path
      */
-    public EvaluationContextImpl readRoot(Object rootObj, Object jsonObject, Configuration configuration) {
+    public Object readRoot(Object rootObj, Object jsonObject, Configuration configuration) {
 
         configuration.setComputeRoot(true);
         try {
-            return path.evaluate(rootObj, jsonObject, jsonObject, configuration);
+            return path.evaluate(rootObj, jsonObject, jsonObject, configuration).getRoot();
         } catch (RuntimeException e) {
             // KR - support suppress exception
             throw e;

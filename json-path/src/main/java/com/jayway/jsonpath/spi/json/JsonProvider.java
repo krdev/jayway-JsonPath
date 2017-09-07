@@ -166,9 +166,18 @@ public interface JsonProvider {
 
     /**
      * Creates a shallow copy of the object.
-     * 
+     *
      * @param obj object to be copied
      * @return copied object
      */
     Object copy(Object obj);
+
+    /**
+     * Extracts a value from obj
+     *
+     * @param obj - a map or an array
+     * @param key property key
+     * @return the map or array entry or {@link com.jayway.jsonpath.spi.json.JsonProvider#UNDEFINED} for missing properties
+     */
+    Object getProperty(Object obj, Object key);
 }

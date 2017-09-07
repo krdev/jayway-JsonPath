@@ -131,7 +131,7 @@ public interface ReadContext {
      * @param <T>
      * @return result
      */
-    <T> T readRoot(String[] paths, Predicate... filters);
+    Object readRoot(String[] paths, Predicate... filters);
 
 
 }

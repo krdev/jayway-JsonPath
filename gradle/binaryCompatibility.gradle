@@ -42,7 +42,7 @@ if (JavaVersion.current().isJava7Compatible()) {
     def reportGenerator = { model ->
         outputProcessor {
 
-            def skipClass = { c -> c.fullyQualifiedName.startsWith('com.jayway.jsonpath.internal') || c.fullyQualifiedName.contains('$')}
+            def skipClass = { c -> c.fullyQualifiedName.startsWith('com.github.lafa.jsonpath.internal') || c.fullyQualifiedName.contains('$')}
             def skipMethod = { c, m -> skipClass(c) || m.name =~ /access\$[0-9]+/ }
             def violations = [:].withDefault {
                 // key = class name
@@ -98,7 +98,7 @@ if (JavaVersion.current().isJava7Compatible()) {
 
         task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
             dependsOn jar
-            //baseline = "com.jayway.jsonpath:${project.name}:+@jar"  //latest release
+            //baseline = "com.github.lafa.jsonpath:${project.name}:+@jar"  //latest release
             baseline = 'com.jayway.jsonpath:json-path:2.0.0@jar'
             to = jar.archivePath
             accessModifier = 'protected'
