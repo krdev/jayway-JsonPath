@@ -14,6 +14,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.jayway.jsonpath.spi.json.JsonProvider;
+
 public class MultiPropTest {
 
     @Test
@@ -214,9 +216,46 @@ public class MultiPropTest {
         Configuration conf = Configuration.defaultConfiguration();
         Object root = using(conf).parse(schemaJson).readRoot(jsonPathArr);
         Assert.assertNotNull(root);
-        Assert.assertTrue(conf.jsonProvider().isMap(root));
 
-        // TODO KR - verify root element individually
+        JsonProvider jp = conf.jsonProvider();
+        Assert.assertTrue(jp.isMap(root));
 
+        Object subReservation = jp.getMapValue(root, "subReservation");
+        Assert.assertTrue(jp.isArray(subReservation));
+        Object subReservation_0 = jp.getArrayIndex(subReservation, 0);
+        Assert.assertTrue(jp.isMap(subReservation_0));
+        Object reservationFor = jp.getMapValue(subReservation_0, "reservationFor");
+        Assert.assertTrue(jp.isMap(reservationFor));
+
+        Object type = jp.getMapValue(reservationFor, "@type");
+        Assert.assertEquals(type, "Flight");
+        Object flightNumber = jp.getMapValue(reservationFor, "flightNumber");
+        Assert.assertEquals(flightNumber, "1993");
+        Object departureAirport = jp.getMapValue(reservationFor, "departureAirport");
+        Assert.assertTrue(jp.isMap(departureAirport));
+        Assert.assertEquals(jp.getMapValue(departureAirport, "@id"), "_:be029eb9-a63b-4160-8420-40dc5d269242");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "@type"), "Airport");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "iataCode"), "SFO");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "name"), "SANFRANCISCO,CA");
+        Object departureAirportIdentifierType = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0), "@type");
+        Assert.assertEquals(departureAirportIdentifierType, "PropertyValue");
+        Object departureAirportIdentifierPropertyID = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0),
+        "propertyID");
+        Assert.assertEquals(departureAirportIdentifierPropertyID, "searchTerms");
+        Object departureAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0), "value");
+        Assert.assertEquals(departureAirportIdentifierValue, "sfo san francisco bay area");
+
+        Object arrivalAirport = jp.getMapValue(reservationFor, "arrivalAirport");
+        Assert.assertTrue(jp.isMap(arrivalAirport));
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "@id"), "_:0bce9885-2389-48dc-9e6d-81ddafaaf2f9");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "@type"), "Airport");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "iataCode"), "DAL");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "name"), "DALLAS,TX");
+        Object arrivalAirportIdentifierType = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "@type");
+        Assert.assertEquals(arrivalAirportIdentifierType, "PropertyValue");
+        Object arrivalAirportIdentifierPropertyID = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "propertyID");
+        Assert.assertEquals(arrivalAirportIdentifierPropertyID, "searchTerms");
+        Object arrivalAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "value");
+        Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");        
     }
 }

@@ -40,6 +40,7 @@
           "@id": "_:0bce9885-2389-48dc-9e6d-81ddafaaf2f9",
           "@type": "Airport",
           "iataCode": "DAL",
+          "name": "DALLAS,TX",
           "identifier": [
             {
               "@type": "PropertyValue",
