@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.jayway.jsonpath.internal.DefaultsImpl;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
 public class MultiPropTest {
@@ -27,7 +28,8 @@ public class MultiPropTest {
             put("c", "c-val");
         }};
 
-        Configuration conf = Configuration.defaultConfiguration();
+        Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(DefaultsImpl.INSTANCE.options())
+                .build();
 
         assertThat(using(conf).parse(model).read("$['a', 'b']", Map.class))
                 .containsEntry("a", "a-val")
@@ -50,7 +52,8 @@ public class MultiPropTest {
             }
         };
 
-        Configuration conf = Configuration.defaultConfiguration();
+        Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(DefaultsImpl.INSTANCE.options())
+                .build();
 
         Object ret1 = using(conf).parse(model).readRoot(new String[] { "$['a', 'b']" });
 
@@ -150,7 +153,10 @@ public class MultiPropTest {
     public void test_array_readRoot() {
         final String json = "{\"v\":[{\"a\":\"a-val\"},{\"b\":\"b-val\"}]}";
         Object result = JsonPath.parse(json).readRoot(new String[] { "$.v[1]" });
-        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.REQUIRE_PROPERTIES);
+
+        Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(DefaultsImpl.INSTANCE.options())
+                .build();
+
         Object arr = conf.jsonProvider().getMapValue(result, "v");
         Assert.assertTrue(conf.jsonProvider().isArray(arr));
         Object elem0 = conf.jsonProvider().getArrayIndex(arr, 0);
@@ -168,7 +174,6 @@ public class MultiPropTest {
         // deep scan + multiprop is quite redundant scenario, but it's not forbidden, so we'd better check
         final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
         Object result = JsonPath.parse(json).readRoot(new String[] { "$..['a', 'c'].v" });
-        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.REQUIRE_PROPERTIES);
 
         // conf.jsonProvider().getMapValue(result, "a")
         // assertThat(result).asList().containsOnly(5, 1);
@@ -256,6 +261,6 @@ public class MultiPropTest {
         Object arrivalAirportIdentifierPropertyID = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "propertyID");
         Assert.assertEquals(arrivalAirportIdentifierPropertyID, "searchTerms");
         Object arrivalAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "value");
-        Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");        
+        Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");
     }
 }
