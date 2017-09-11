@@ -13,6 +13,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.internal.DefaultsImpl;
 
 public class NullHandlingTest {
 
@@ -70,7 +71,11 @@ public class NullHandlingTest {
     @Test
     public void the_age_of_all_with_age_defined_readLineageRoot() {
         // List<Integer> result = JsonPath.read(DOCUMENT, "$.children[*].age");
-        Object result = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(DOCUMENT)
+
+        Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(DefaultsImpl.INSTANCE.options())
+                .build().setOptions(Option.SUPPRESS_EXCEPTIONS);
+
+        Object result = JsonPath.using(conf).parse(DOCUMENT)
                 .readRoot(new String[] { "$.children[*].age" });
 
         Assert.assertNotNull(result);
@@ -80,8 +85,12 @@ public class NullHandlingTest {
 
     @Test
     public void the_age_of_all_with_notpresent_readLineageRoot() {
+
+        Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(DefaultsImpl.INSTANCE.options())
+                .build().setOptions(Option.SUPPRESS_EXCEPTIONS);
+
         // List<Integer> result = JsonPath.read(DOCUMENT, "$.children[*].age");
-        Object result = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(DOCUMENT)
+        Object result = JsonPath.using(conf).parse(DOCUMENT)
                 .readRoot(new String[] { "$.children[*].agee" });
 
         Assert.assertNotNull(result);

@@ -75,6 +75,12 @@ public class JsonContext implements DocumentContext {
     @Override
     public <T> T read(String path, Predicate... filters) {
         notEmpty(path, "path can not be null or empty");
+
+        // KR throw exception if config points to readRoot()
+        if (configuration.getComputeRoot()) {
+            throw new IllegalArgumentException("Invalid configuration, readRoot + read not supported.");
+        }
+
         Cache cache = CacheProvider.getCache();
 
         path = path.trim();
