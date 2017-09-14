@@ -126,13 +126,10 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
         assertThat(objs.get(3).asDouble()).isEqualTo(22.99D);
     }
 
-    // TODO KR - fix this
     @Test
-    @Ignore("TODO KR")
     public void list_of_numbers_lineageRoot() {
         ObjectNode root = (ObjectNode) using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT)
                 .readRoot(new String[] { "$.store.book[*].display-price" });
-        System.out.println("object " + root);
 
         JsonNode store = root.get("store");
         Assert.assertNotNull(store);
