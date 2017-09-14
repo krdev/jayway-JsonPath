@@ -47,6 +47,12 @@ public class GsonJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void json_can_be_parsed_readroot() {
+        JsonObject node =  (JsonObject) using(GSON_CONFIGURATION_FOR_READ_ROOT).parse(JSON_DOCUMENT).readRoot(new String[] {"$"});
+        assertThat(node.get("string-property").getAsString()).isEqualTo("string-value");
+    }
+    
+    @Test
     public void strings_are_unwrapped() {
         JsonElement node =  using(GSON_CONFIGURATION).parse(JSON_DOCUMENT).read("$.string-property");
         String unwrapped =  using(GSON_CONFIGURATION).parse(JSON_DOCUMENT).read("$.string-property", String.class);
