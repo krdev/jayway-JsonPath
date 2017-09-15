@@ -4,6 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jayway.jsonpath.spi.json.JsonProvider;
+
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,18 @@ public class JsonOrgJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void an_object_can_be_readroot() {
+
+        Object root = using(JSON_ORG_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] {"$.store.book[0]"});
+        JsonProvider jp = JSON_ORG_CONFIGURATION_FOR_READROOT.jsonProvider();
+        Object store = jp.getProperty(root, "store");
+        Object bookarray = jp.getProperty(store, "book");
+        Object book = jp.getProperty(bookarray, "0");
+        Object author = jp.getProperty(book, "author");
+        assertThat(author).isEqualTo("Nigel Rees");
+    }
+    
+    @Test
     public void a_property_can_be_read() {
 
         String category = using(JSON_ORG_CONFIGURATION).parse(JSON_DOCUMENT).read("$.store.book[0].category");
@@ -30,6 +45,18 @@ public class JsonOrgJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void a_property_can_be_readroot() {
+
+        Object root = using(JSON_ORG_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] {"$.store.book[0].category"});
+        JsonProvider jp = JSON_ORG_CONFIGURATION_FOR_READROOT.jsonProvider();
+        Object store = jp.getProperty(root, "store");
+        Object bookarray = jp.getProperty(store, "book");
+        Object book = jp.getProperty(bookarray, "0");
+        Object category = jp.getProperty(book, "category");
+        assertThat(category).isEqualTo("reference");
+    }
+    
+    @Test
     public void a_filter_can_be_applied() {
 
         JSONArray fictionBooks = using(JSON_ORG_CONFIGURATION).parse(JSON_DOCUMENT).read("$.store.book[?(@.category == 'fiction')]");
@@ -37,6 +64,12 @@ public class JsonOrgJsonProviderTest extends BaseTest {
         assertThat(fictionBooks.length()).isEqualTo(3);
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void a_filter_can_be_applied_readroot() {
+    	JSON_ORG_CONFIGURATION_FOR_READROOT.setComputeRoot(true);
+        using(JSON_ORG_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).read("$.store.book[?(@.category == 'fiction')]");
+    }
+    
     @Test
     public void result_can_be_mapped_to_object() {
 

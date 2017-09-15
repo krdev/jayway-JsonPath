@@ -31,6 +31,24 @@ public class JacksonTest extends BaseTest {
 
     }
 
+    @Test
+    public void an_object_can_be_mapped_to_pojo_readroot() {
+
+        String json = "{\n" +
+                "   \"foo\" : \"foo\",\n" +
+                "   \"bar\" : 10,\n" +
+                "   \"baz\" : true\n" +
+                "}";
+
+        Object obj  = JsonPath.using(JACKSON_CONFIGURATION_FOR_READROOT).parse(json).readRoot(new String[] {"$"});
+        FooBarBaz fooBarBaz = new ObjectMapper().convertValue(obj, FooBarBaz.class);
+
+        assertThat(fooBarBaz.foo).isEqualTo("foo");
+        assertThat(fooBarBaz.bar).isEqualTo(10L);
+        assertThat(fooBarBaz.baz).isEqualTo(true);
+
+    }
+    
     public static class FooBarBaz {
         public String foo;
         public Long bar;

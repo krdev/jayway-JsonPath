@@ -70,6 +70,20 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void always_return_same_object_readroot() { // Test because of Bug #211
+    	DocumentContext context = using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT);
+        ObjectNode node1 = (ObjectNode) context.readRoot(new String[] {"$"});
+        ObjectNode child1 = new ObjectNode(JsonNodeFactory.instance);
+        child1.put("name", "test");
+        context.put("$", "child", child1);
+        ObjectNode node2 = (ObjectNode) context.readRoot(new String[] {"$"});
+        ObjectNode child2 = (ObjectNode) context.readRoot(new String[] {"$.child"});
+
+        assertThat(node1).isSameAs(node2);
+        assertThat(child1).isSameAs(child2.get("child"));
+    }
+    
+    @Test
     public void always_return_same_object_readLineageRoot() { // Test because of Bug #211
         DocumentContext context1 = using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT);
         DocumentContext context2 = using(JACKSON_JSON_NODE_CONFIGURATION).parse(JSON_DOCUMENT);
@@ -136,6 +150,11 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
         JsonNode book = store.get("book");
         Assert.assertTrue(book.isArray());
         Assert.assertTrue(book.size() == 4);
+        assertThat(book.get(0).get("display-price").asDouble()).isEqualTo(8.95D);
+        assertThat(book.get(1).get("display-price").asDouble()).isEqualTo(12.99D);
+        assertThat(book.get(2).get("display-price").asDouble()).isEqualTo(8.99D);
+        assertThat(book.get(3).get("display-price").asDouble()).isEqualTo(22.99D);
+        
     }
 
     @Test

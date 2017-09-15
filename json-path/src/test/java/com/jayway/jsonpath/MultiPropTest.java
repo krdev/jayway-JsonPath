@@ -58,13 +58,13 @@ public class MultiPropTest {
         Object ret1 = using(conf).parse(model).readRoot(new String[] { "$['a', 'b']" });
 
         Assert.assertNotNull(ret1);
-        conf.jsonProvider().getMapValue(ret1, "a").equals("a-val");
-        conf.jsonProvider().getMapValue(ret1, "b").equals("b-val");
+        Assert.assertEquals(conf.jsonProvider().getProperty(ret1, "a"), "a-val");
+        Assert.assertEquals(conf.jsonProvider().getProperty(ret1, "b"), "b-val");
 
         Object ret2 = using(conf).parse(model).readRoot(new String[] { "$['a', 'd']" });
         Assert.assertNotNull(ret2);
-        conf.jsonProvider().getMapValue(ret2, "a").equals("a-val");
-        conf.jsonProvider().getMapValue(ret2, "d").equals(null);
+        Assert.assertEquals(conf.jsonProvider().getProperty(ret2, "a"), "a-val");
+        Assert.assertNull(conf.jsonProvider().getProperty(ret2, "d"));
     }
 
     @Test

@@ -26,8 +26,6 @@ public class PredicateTest extends BaseTest {
         assertThat(reader.read("$.store.book[?].isbn", List.class, booksWithISBN)).containsOnly("0-395-19395-8", "0-553-21311-3");
     }
 
-    // TODO KR fix this
-    @Ignore
     @Test
     public void predicates_filters_can_be_applied_readRoot() {
         Predicate booksWithISBN = new Predicate() {
@@ -37,19 +35,17 @@ public class PredicateTest extends BaseTest {
             }
         };
 
-        // Object result = reader.readRoot("$.store.book[?].isbn", booksWithISBN);
-        // sh*y GSON does not work here
         Object result = using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] { "$.store.book[?].isbn" },
                 booksWithISBN);
         Assert.assertNotNull(result);
-        Assert.assertTrue(Configuration.defaultConfiguration().jsonProvider().isMap(result));
-        Object storeObj = Configuration.defaultConfiguration().jsonProvider().getMapValue(result, "store");
-        Assert.assertTrue(Configuration.defaultConfiguration().jsonProvider().isMap(storeObj));
-        Object booksObj = Configuration.defaultConfiguration().jsonProvider().getMapValue(storeObj, "book");
-        Object elem1 = Configuration.defaultConfiguration().jsonProvider().getArrayIndex(booksObj, 2);
-        Object elem2 = Configuration.defaultConfiguration().jsonProvider().getArrayIndex(booksObj, 3);
+        Assert.assertTrue(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().isMap(result));
+        Object storeObj = JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(result, "store");
+        Assert.assertTrue(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().isMap(storeObj));
+        Object booksObj = JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(storeObj, "book");
+        Object elem1 = JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getArrayIndex(booksObj, 2);
+        Object elem2 = JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getArrayIndex(booksObj, 3);
 
-        Assert.assertEquals(Configuration.defaultConfiguration().jsonProvider().getMapValue(elem1, "isbn"), "0-553-21311-3");
-        Assert.assertEquals(Configuration.defaultConfiguration().jsonProvider().getMapValue(elem2, "isbn"), "0-395-19395-8");
+        Assert.assertEquals(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(elem1, "isbn"), "0-553-21311-3");
+        Assert.assertEquals(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(elem2, "isbn"), "0-395-19395-8");
     }
 }

@@ -25,18 +25,36 @@ public class BaseTest {
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
+    public static final Configuration JSON_ORG_CONFIGURATION_FOR_READROOT = Configuration
+            .builder()
+            .mappingProvider(new JsonOrgMappingProvider())
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
+    
     public static final Configuration GSON_CONFIGURATION = Configuration
             .builder()
             .mappingProvider(new GsonMappingProvider())
             .jsonProvider(new GsonJsonProvider())
             .build();
 
+    public static final Configuration GSON_CONFIGURATION_FOR_READ_ROOT = Configuration
+            .builder()
+            .mappingProvider(new GsonMappingProvider())
+            .jsonProvider(new GsonJsonProvider())
+            .build();
+    
     public static final Configuration JACKSON_CONFIGURATION = Configuration
             .builder()
             .mappingProvider(new JacksonMappingProvider())
             .jsonProvider(new JacksonJsonProvider())
             .build();
 
+    public static final Configuration JACKSON_CONFIGURATION_FOR_READROOT = Configuration
+            .builder()
+            .mappingProvider(new JacksonMappingProvider())
+            .jsonProvider(new JacksonJsonProvider())
+            .build();
+    
     public static final Configuration JACKSON_JSON_NODE_CONFIGURATION = Configuration
             .builder()
             .mappingProvider(new JacksonMappingProvider())

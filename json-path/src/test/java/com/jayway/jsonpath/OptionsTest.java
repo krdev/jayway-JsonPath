@@ -1,11 +1,16 @@
 package com.jayway.jsonpath;
 
+import org.hamcrest.collection.IsEmptyCollection;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.jayway.jsonpath.JsonPath.using;
 import static com.jayway.jsonpath.Option.*;
@@ -23,6 +28,19 @@ public class OptionsTest extends BaseTest {
 
         assertThat(using(conf).parse("{\"foo\" : \"bar\"}").read("$.baz")).isNull();
     }
+    
+    /**
+     * Test to check if there is a missing element in json document, we get an empty map back even with SUPRESS_EXCEPTIONS and no exception should be thrown.
+     *  
+     */
+    @Test
+    public void missing_elements_in_jsonpath_readroot() {
+
+        Configuration conf = Configuration.defaultConfiguration();
+        conf.setOptions(Option.SUPPRESS_EXCEPTIONS);
+        Object root = using(conf).parse("{\"foo\" : \"bar\"}").readRoot(new String[] {"$.baz"});
+        Assert.assertEquals(((Map)root).size(), 0);
+    }
 
     @Test
     public void a_leafs_can_be_defaulted_to_null() {
@@ -32,6 +50,33 @@ public class OptionsTest extends BaseTest {
         assertThat(using(conf).parse("{\"foo\" : \"bar\"}").read("$.baz", Object.class)).isNull();
     }
 
+    /**
+     * Test to check when there is a missing element in json document, we get an map even with DEFAULT_PATH_LEAF_TO_NULL set.
+     * The value of the missing element should be null.
+     *  
+     */
+    @Test
+    public void a_leafs_can_be_defaulted_to_null_readroot() {
+
+        Configuration conf = Configuration.builder().options(DEFAULT_PATH_LEAF_TO_NULL).build();
+        Object root = using(conf).parse("{\"foo\" : \"bar\"}").readRoot(new String[] {"$.baz"});
+        assertThat(root).isNotNull();
+        Assert.assertNull(conf.jsonProvider().getMapValue(root, "baz"));
+    }
+    
+    /**
+     * Test to check when there is a missing element in json document, we get an empty map with DEFAULT_PATH_LEAF_TO_NULL not set.
+     *  
+     */
+    @Test
+    public void a_leafs_not_defaulted_to_null_readroot() {
+
+        Configuration conf = Configuration.builder().build();
+        Object root = using(conf).parse("{\"foo\" : \"bar\"}").readRoot(new String[] {"$.baz"});
+        assertThat(root).isNotNull();
+        Assert.assertEquals(((Map)root).size(), 0);
+    }
+    
     @Test
     public void a_definite_path_is_not_returned_as_list_by_default() {
 
@@ -40,6 +85,31 @@ public class OptionsTest extends BaseTest {
         assertThat(using(conf).parse("{\"foo\" : \"bar\"}").read("$.foo")).isInstanceOf(String.class);
     }
 
+    /**
+     * Test to check if a map instance is returned, without ALWAYS_RETURN_LIST set.
+     * 
+     */
+    @Test
+    public void a_definite_path_is_not_returned_as_list_by_default_map_readroot() {
+
+        Configuration conf = Configuration.defaultConfiguration();
+        Object root = using(conf).parse("{\"foo\" : \"bar\"}").readRoot(new String[] {"$.foo"});
+        assertThat(root).isInstanceOf(Map.class);
+    }
+
+    /**
+     * Test to check if a map instance is returned, even with ALWAYS_RETURN_LIST set.
+     * 
+     */
+    @Test
+    public void a_definite_path_is_returned_as_list_by_default_map_readroot() {
+
+        Configuration conf = Configuration.defaultConfiguration();
+        conf.setOptions(Option.ALWAYS_RETURN_LIST);
+        Object root = using(conf).parse("{\"foo\" : \"bar\"}").readRoot(new String[] {"$.foo"});
+        assertThat(root).isInstanceOf(Map.class);
+    }
+    
     @Test
     public void a_definite_path_can_be_returned_as_list() {
 
@@ -118,6 +188,22 @@ public class OptionsTest extends BaseTest {
         } catch (PathNotFoundException pnf){}
     }
 
+    @Test
+    public void when_property_is_required_exception_is_thrown_readroot() {
+        List<Map<String, String>> model = asList(singletonMap("a", "a-val"),singletonMap("b", "b-val"));
+
+        Configuration conf = Configuration.defaultConfiguration();
+        Object root = using(conf).parse(model).readRoot(new String[] {"$[*].a"});
+        Assert.assertEquals(((Map)((List)root).get(0)).get("a"), "a-val");
+
+        conf = conf.addOptions(Option.REQUIRE_PROPERTIES);
+
+        try{
+            using(conf).parse(model).readRoot(new String[] {"$[*].a"});
+            fail("Should throw PathNotFoundException");
+        } catch (PathNotFoundException pnf){}
+    }
+    
     @Test
     public void when_property_is_required_exception_is_thrown_2() {
         Map<String, Object> model = new HashMap<String, Object>();
