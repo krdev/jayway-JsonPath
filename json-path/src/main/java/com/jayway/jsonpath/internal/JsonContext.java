@@ -131,8 +131,17 @@ public class JsonContext implements DocumentContext {
                 jsonPath = compile(path, filters);
                 cache.put(cacheKey, jsonPath);
             }
-            ret = jsonPath.readRoot(rootObj, json, configuration);
-            rootObj = ret;
+            try {
+            	ret = jsonPath.readRoot(rootObj, json, configuration);
+            	rootObj = ret;
+            } catch (RuntimeException e) {
+            	// support suppress exception
+            	if (configuration.getOptions().contains(Option.SUPPRESS_EXCEPTIONS)) {
+            		continue;
+            	} else {
+            		throw e;
+            	}
+            }
         }
         return ret;
     }

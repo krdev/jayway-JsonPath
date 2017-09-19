@@ -169,21 +169,20 @@ public class MultiPropTest {
         Assert.assertEquals(elem1, objectB);
     }
 
+    @Test(expected=RuntimeException.class)
+    public void deep_scan_throws_exception_readRoot() {
+    	final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
+    	JsonPath.parse(json).readRoot(new String[] { "$..['a', 'c'].v" });
+    }
+    
     @Test
-    public void deep_scan_does_not_affect_non_leaf_multi_props_readRoot() {
-        // deep scan + multiprop is quite redundant scenario, but it's not forbidden, so we'd better check
-        final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
-        Object result = JsonPath.parse(json).readRoot(new String[] { "$..['a', 'c'].v" });
-
-        // conf.jsonProvider().getMapValue(result, "a")
-        // assertThat(result).asList().containsOnly(5, 1);
-
-        result = JsonPath.parse(json).readRoot(new String[] { "$..v" });
-        Assert.assertNotNull(result);
-
-        result = JsonPath.parse(json).readRoot(new String[] { "$..['a', 'c'][?(@.flag)].v" });
-        // KR - TODO fix this
-        // assertThat(result).asList().containsOnly(1);
+    public void deep_scan_returns_empty_map_readRoot_with_supress_exceptions() {
+    	final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
+    	 Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
+    	 DocumentContext dc = using(conf).parse(json);
+    	 Object root = dc.readRoot(new String[] { "$..['a', 'c'].v" });
+    	 Assert.assertTrue(conf.jsonProvider().isMap(root));
+    	 Assert.assertEquals(root.toString(), "{}");
     }
 
     @Test
@@ -262,5 +261,78 @@ public class MultiPropTest {
         Assert.assertEquals(arrivalAirportIdentifierPropertyID, "searchTerms");
         Object arrivalAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "value");
         Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");
+    }
+    
+    @Test
+    public void testIosShortPayloadBasicFlightReservationWithPredicateInJsonPathReadroot() throws IOException {
+        final InputStream jsonStream = this.getClass().getClassLoader().getResourceAsStream("basicFlightReservation.json");
+        final String schemaJson = IOUtils.toString(jsonStream, StandardCharsets.UTF_8);
+        final String jsonPathArr[] = new String[] { "$.subReservation[0].reservationFor.@type", "$.subReservation..potentialAction",
+                "$.subReservation[0].reservationFor.departureAirport", "$.subReservation[0].reservationFor.arrivalAirport" };
+
+        Configuration conf = Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS);
+        Object root = using(conf).parse(schemaJson).readRoot(jsonPathArr);
+        Assert.assertNotNull(root);
+
+        JsonProvider jp = conf.jsonProvider();
+        Assert.assertTrue(jp.isMap(root));
+
+        Object subReservation = jp.getMapValue(root, "subReservation");
+        Assert.assertTrue(jp.isArray(subReservation));
+        Object subReservation_0 = jp.getArrayIndex(subReservation, 0);
+        Assert.assertTrue(jp.isMap(subReservation_0));
+        Object reservationFor = jp.getMapValue(subReservation_0, "reservationFor");
+        Assert.assertTrue(jp.isMap(reservationFor));
+
+        Object type = jp.getMapValue(reservationFor, "@type");
+        Assert.assertEquals(type, "Flight");
+        // flight number should not be present in the returned json since it was a predicate path.
+        Object flightNumber = jp.getMapValue(reservationFor, "flightNumber");
+        Assert.assertEquals(flightNumber, jp.UNDEFINED);
+        
+        Object departureAirport = jp.getMapValue(reservationFor, "departureAirport");
+        Assert.assertTrue(jp.isMap(departureAirport));
+        Assert.assertEquals(jp.getMapValue(departureAirport, "@id"), "_:be029eb9-a63b-4160-8420-40dc5d269242");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "@type"), "Airport");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "iataCode"), "SFO");
+        Assert.assertEquals(jp.getMapValue(departureAirport, "name"), "SANFRANCISCO,CA");
+        Object departureAirportIdentifierType = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0), "@type");
+        Assert.assertEquals(departureAirportIdentifierType, "PropertyValue");
+        Object departureAirportIdentifierPropertyID = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0),
+        "propertyID");
+        Assert.assertEquals(departureAirportIdentifierPropertyID, "searchTerms");
+        Object departureAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(departureAirport, "identifier"), 0), "value");
+        Assert.assertEquals(departureAirportIdentifierValue, "sfo san francisco bay area");
+
+        Object arrivalAirport = jp.getMapValue(reservationFor, "arrivalAirport");
+        Assert.assertTrue(jp.isMap(arrivalAirport));
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "@id"), "_:0bce9885-2389-48dc-9e6d-81ddafaaf2f9");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "@type"), "Airport");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "iataCode"), "DAL");
+        Assert.assertEquals(jp.getMapValue(arrivalAirport, "name"), "DALLAS,TX");
+        Object arrivalAirportIdentifierType = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "@type");
+        Assert.assertEquals(arrivalAirportIdentifierType, "PropertyValue");
+        Object arrivalAirportIdentifierPropertyID = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "propertyID");
+        Assert.assertEquals(arrivalAirportIdentifierPropertyID, "searchTerms");
+        Object arrivalAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "value");
+        Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");
+    }
+    
+    /**
+     * Test readroot with '.' missing after $ in jsonpath.
+     */
+    @Test(expected=InvalidPathException.class)
+    public void test_without_a_dot() {
+
+    	Map<String, Object> model = new HashMap<String, Object>(){{
+    		put("a", "a-val");
+    		put("b", "b-val");
+    		put("c", "c-val");
+    	}};
+
+    	Configuration conf = Configuration.builder().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider()).options(Option.SUPPRESS_EXCEPTIONS)
+    			.build();
+
+    	Object root = using(conf).parse(model).readRoot(new String[] {"$a"});
     }
 }

@@ -2,6 +2,7 @@ package com.jayway.jsonpath;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.gson.JsonArray;
+import com.jayway.jsonpath.internal.EvaluationAbortException;
 import com.jayway.jsonpath.spi.json.GsonJsonProvider;
 import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
@@ -57,35 +58,12 @@ public class ProviderInTest {
     }
 
 
-    @Test
+    @Test(expected=EvaluationAbortException.class)
     public void testJsonPathQuotesJacksonReadroot() throws Exception {
         final Configuration jackson = Configuration.builder().jsonProvider(new JacksonJsonProvider()).mappingProvider(new JacksonMappingProvider()).build();
         final DocumentContext ctx = JsonPath.using(jackson).parse(JSON);
 
         Object obj = ctx.readRoot(new String[] {DOUBLE_QUOTES_EQUALS_FILTER});
-        Assert.assertTrue(jackson.jsonProvider().isArray(obj));
-        
-        Object doubleQuoteEqualsResult = jackson.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jackson.jsonProvider().isMap(doubleQuoteEqualsResult));
-        Assert.assertEquals(jackson.jsonProvider().getMapValue(doubleQuoteEqualsResult, "foo"), "bar");
-
-        obj = ctx.readRoot(new String[] {SINGLE_QUOTES_EQUALS_FILTER});
-        Assert.assertTrue(jackson.jsonProvider().isArray(obj));
-        Object singleQuoteEqualsResult = jackson.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jackson.jsonProvider().isMap(singleQuoteEqualsResult));
-        assertEquals(doubleQuoteEqualsResult, singleQuoteEqualsResult);
-
-        obj = ctx.readRoot(new String[] {DOUBLE_QUOTES_IN_FILTER});
-        Assert.assertTrue(jackson.jsonProvider().isArray(obj));
-        Object doubleQuoteInResult = jackson.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jackson.jsonProvider().isMap(doubleQuoteInResult));
-        assertEquals(doubleQuoteInResult, doubleQuoteEqualsResult);
-        
-        obj = ctx.readRoot(new String[] {SINGLE_QUOTES_IN_FILTER});
-        Assert.assertTrue(jackson.jsonProvider().isArray(obj));
-        Object singleQuoteInResult = jackson.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jackson.jsonProvider().isMap(singleQuoteInResult));
-        assertEquals(singleQuoteInResult, singleQuoteInResult);
     }
     
     @Test
@@ -106,35 +84,13 @@ public class ProviderInTest {
         assertEquals(doubleQuoteInResult, singleQuoteInResult);
     }
 
-    @Test
+    @Test(expected=EvaluationAbortException.class)
     public void testJsonPathQuotesJacksonJsonNodeReadRoot() throws Exception {
         final Configuration jacksonJsonNode = Configuration.builder().jsonProvider(new JacksonJsonNodeJsonProvider()).mappingProvider(new JacksonMappingProvider()).build();
         final DocumentContext ctx = JsonPath.using(jacksonJsonNode).parse(JSON);
 
         Object obj = ctx.readRoot(new String[] {DOUBLE_QUOTES_EQUALS_FILTER});
         Assert.assertTrue(jacksonJsonNode.jsonProvider().isArray(obj));
-        
-        Object doubleQuoteEqualsResult = jacksonJsonNode.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isMap(doubleQuoteEqualsResult));
-        Assert.assertEquals(jacksonJsonNode.jsonProvider().getMapValue(doubleQuoteEqualsResult, "foo"), "bar");
-
-        obj = ctx.readRoot(new String[] {SINGLE_QUOTES_EQUALS_FILTER});
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isArray(obj));
-        Object singleQuoteEqualsResult = jacksonJsonNode.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isMap(singleQuoteEqualsResult));
-        assertEquals(doubleQuoteEqualsResult, singleQuoteEqualsResult);
-
-        obj = ctx.readRoot(new String[] {DOUBLE_QUOTES_IN_FILTER});
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isArray(obj));
-        Object doubleQuoteInResult = jacksonJsonNode.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isMap(doubleQuoteInResult));
-        assertEquals(doubleQuoteInResult, doubleQuoteEqualsResult);
-        
-        obj = ctx.readRoot(new String[] {SINGLE_QUOTES_IN_FILTER});
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isArray(obj));
-        Object singleQuoteInResult = jacksonJsonNode.jsonProvider().getArrayIndex(obj, 0);
-        Assert.assertTrue(jacksonJsonNode.jsonProvider().isMap(singleQuoteInResult));
-        assertEquals(singleQuoteInResult, singleQuoteInResult);
     }
     
     @Test

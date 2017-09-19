@@ -2,6 +2,8 @@ package com.jayway.jsonpath;
 
 import org.junit.Test;
 
+import junit.framework.Assert;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -332,5 +334,19 @@ public class DeepScanTest extends BaseTest {
                 .parse(json)
                 .read("$..array[0]");
         assertThat(result.get(0)).isEqualTo(expected);
+    }
+    
+    @Test(expected=RuntimeException.class)
+    public void deepscan_throws_exception_without_suppress_exceptions_for_readroot() {
+    	Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
+    	DocumentContext dc = using(conf).parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}");
+    	Object root = dc.readRoot(new String[] {"$..foo"});
+    	Assert.assertTrue(conf.jsonProvider().isMap(root));
+    	Assert.assertEquals(root.toString(), "{}");
+
+    	//Remove the SuppressException option.
+    	conf = conf.defaultConfiguration();
+    	dc = using(conf).parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}");
+    	dc.readRoot(new String[] {"$..foo"});
     }
 }
