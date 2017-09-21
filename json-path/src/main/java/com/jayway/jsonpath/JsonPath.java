@@ -707,14 +707,7 @@ public class JsonPath {
      * @return the root object matched by the given path
      */
     public Object readRoot(Object rootObj, Object jsonObject, Configuration configuration) {
-
         configuration.setComputeRoot(true);
-        try {
-            return path.evaluate(rootObj, jsonObject, jsonObject, configuration).getRoot();
-        } catch (RuntimeException e) {
-            // KR - support suppress exception
-            throw e;
-        }
-
+        return path.evaluate(rootObj, jsonObject, jsonObject, configuration).getRoot();
     }
 }

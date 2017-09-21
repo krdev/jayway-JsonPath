@@ -117,6 +117,7 @@ public class CompiledPath implements Path {
             PathRef op = ctx.forUpdate() ? PathRef.createRoot(rootDocument) : PathRef.NO_OP;
             root.evaluate("", op, document, ctx);
         } catch (EvaluationAbortException abort) {
+        	throw abort;
         }
 
         return ctx;

@@ -15,6 +15,7 @@
 package com.jayway.jsonpath.internal.path;
 
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.internal.EvaluationAbortException;
 import com.jayway.jsonpath.internal.PathRef;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 
@@ -30,7 +31,10 @@ public class ScanPathToken extends PathToken {
 
     @Override
     public void evaluate(String currentPath, PathRef parent, Object model, EvaluationContextImpl ctx) {
-
+    	//readroot does not support deepscan yet.
+    	if (ctx.configuration().getComputeRoot()) {
+    		throw new EvaluationAbortException();
+    	}
         PathToken pt = next();
 
         walk(pt, currentPath, parent,  model, ctx, createScanPredicate(pt, ctx));

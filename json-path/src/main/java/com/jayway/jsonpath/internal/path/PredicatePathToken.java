@@ -17,6 +17,7 @@ package com.jayway.jsonpath.internal.path;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.Predicate;
+import com.jayway.jsonpath.internal.EvaluationAbortException;
 import com.jayway.jsonpath.internal.PathRef;
 
 import java.util.Collection;
@@ -42,6 +43,10 @@ public class PredicatePathToken extends PathToken {
 
     @Override
     public void evaluate(String currentPath, PathRef ref, Object model, EvaluationContextImpl ctx) {
+    	//readroot does not support predicates yet.
+    	if (ctx.configuration().getComputeRoot()) {
+    		throw new EvaluationAbortException();
+    	}
         if (ctx.jsonProvider().isMap(model)) {
             if (accept(model, ctx.rootDocument(), ctx.configuration(), ctx)) {
                 PathRef op = ctx.forUpdate() ? ref : PathRef.NO_OP;

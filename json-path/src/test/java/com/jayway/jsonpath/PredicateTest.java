@@ -27,6 +27,7 @@ public class PredicateTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void predicates_filters_can_be_applied_readRoot() {
         Predicate booksWithISBN = new Predicate() {
             @Override
@@ -47,5 +48,26 @@ public class PredicateTest extends BaseTest {
 
         Assert.assertEquals(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(elem1, "isbn"), "0-553-21311-3");
         Assert.assertEquals(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT.jsonProvider().getMapValue(elem2, "isbn"), "0-395-19395-8");
+    }
+    
+    @Test(expected=RuntimeException.class)
+    public void predicates_filters_throws_exception_without_suppress_exceptions_for_readroot() {
+    	Predicate booksWithISBN = new Predicate() {
+    		@Override
+    		public boolean apply(PredicateContext ctx) {
+    			return ctx.item(Map.class).containsKey("isbn");
+    		}
+    	};
+    	Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
+    	DocumentContext dc = using(conf).parse(JSON_DOCUMENT);
+
+    	Object root = dc.readRoot(new String[] {"$.store.book[?].isbn"}, booksWithISBN);
+    	Assert.assertTrue(conf.jsonProvider().isMap(root));
+    	Assert.assertEquals(root.toString(), "{}");
+
+    	//Remove the SuppressException option.
+    	conf = conf.defaultConfiguration();
+    	dc = using(conf).parse(JSON_DOCUMENT);
+    	dc.readRoot(new String[] {"$.store.book[?].isbn"}, booksWithISBN);
     }
 }
