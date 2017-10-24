@@ -1,12 +1,15 @@
 package com.jayway.jsonpath;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import org.assertj.core.util.Lists;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.regex.Pattern;
 
 import static com.jayway.jsonpath.Criteria.where;
@@ -469,6 +472,10 @@ public class FilterTest extends BaseTest {
 
                 return i == 1;
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+			}
         };
         assertThat(filter(where("string-key").eq("string").and("$").matches(p)).apply(createPredicateContext(json))).isEqualTo(true);
     }
@@ -527,5 +534,125 @@ public class FilterTest extends BaseTest {
     public void inline_in_criteria_evaluates() {
         List list = JsonPath.read(JSON_DOCUMENT, "$.store.book[?(@.category in ['reference', 'fiction'])]");
         assertThat(list).hasSize(4);
+    }
+    
+    /**
+     * Test extraction of relational expression values for "IN" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterIN() throws IOException {
+        final String path = "$.[?(\"123456789\" in @.mailboxes[*].sledId)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "@['mailboxes'][*]['sledId']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"123456789\"");
+    }
+    
+    /**
+     * Test extraction of relational expression values for "NIN" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterNIN() throws IOException {
+        final String path = "$.[?(\"123456789\" nin @.mailboxes[*].sledId)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "@['mailboxes'][*]['sledId']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"123456789\"");
+    }
+    
+    /**
+     * Test extraction of relational expression values for "SubsetOf" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterSubsetOf() throws IOException {
+        final String path = "$.[?(\"@.Sizes\" subsetof ['S', 'M', 'L'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "['S', 'M', 'L']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"@.Sizes\"");
+    }
+    
+    /**
+     * Test extraction of relational expression values for "Size" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterSize() throws IOException {
+        final String path = "$.[?(\"@.Sizes\" size ['S', 'M', 'L'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "['S', 'M', 'L']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"@.Sizes\"");
+    }
+
+    /**
+     * Test extraction of relational expression values for "<=" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterLE() throws IOException {
+        final String path = "$.[?(@.price <= $['expensive'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['price']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "$['expensive']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for "!=" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterNE() throws IOException {
+        final String path = "$.[?(@.price != $['expensive'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['price']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "$['expensive']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for ">=" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterGE() throws IOException {
+        final String path = "$.[?(@.price >= $['expensive'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['price']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "$['expensive']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for "=~" filter
+     * @throws IOException
+     */
+    @Test
+    public void testGetRelationalExprValuesForFilterRE() throws IOException {
+        final String path = "$.[?(@.price =~ $['expensive'])]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['price']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "$['expensive']");
     }
 }

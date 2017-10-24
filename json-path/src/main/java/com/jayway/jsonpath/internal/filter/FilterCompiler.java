@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 public class FilterCompiler {
     private static final Logger logger = LoggerFactory.getLogger(FilterCompiler.class);
@@ -415,6 +417,12 @@ public class FilterCompiler {
             return predicate.apply(ctx);
         }
 
+        @Override
+    	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+        	predicate.getRelationalExprValues(valuesMap);
+        	return;
+        }
+        
         @Override
         public String toString() {
             String predicateString = predicate.toString();

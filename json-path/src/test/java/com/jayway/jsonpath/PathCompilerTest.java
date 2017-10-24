@@ -3,7 +3,10 @@ package com.jayway.jsonpath;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 import static com.jayway.jsonpath.internal.path.PathCompiler.compile;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,6 +132,10 @@ public class PathCompilerTest {
             public boolean apply(PredicateContext ctx) {
                 return false;
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+			}
         };
         assertThat(compile("$[?]", p).toString()).isEqualTo("$[?]");
         assertThat(compile("$[?,?]", p, p).toString()).isEqualTo("$[?,?]");

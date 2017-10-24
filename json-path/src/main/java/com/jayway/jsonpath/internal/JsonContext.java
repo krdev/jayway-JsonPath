@@ -143,9 +143,13 @@ public class JsonContext implements DocumentContext {
             	}
             }
         }
+        if (ret == null) {
+        	// Return an empty map.
+        	ret = configuration.jsonProvider().createMap();
+        }
         return ret;
     }
-
+    
     @Override
     public <T> T read(String path, Class<T> type, Predicate... filters) {
         return convert(read(path, filters), type, configuration);

@@ -1,5 +1,8 @@
 package com.jayway.jsonpath.internal.filter;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,5 +47,14 @@ public class RelationalExpressionNode extends ExpressionNode {
             return evaluator.evaluate(l, r, ctx);
         }
         return false;
+    }
+    
+    @Override
+	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+    	String l = left.toString();
+        String r = right.toString();
+        valuesMap.add(new SimpleEntry<String, String>(l, r));
+        
+    	return;
     }
 }
