@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.regex.Pattern;
 
 import static com.jayway.jsonpath.internal.Utils.notNull;
@@ -61,6 +63,11 @@ public class Criteria implements Predicate {
         return true;
     }
 
+    @Override
+	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+    	return;
+    }
+    
     @Override
     public String toString() {
         return Utils.join(" && ", toRelationalExpressionNodes());

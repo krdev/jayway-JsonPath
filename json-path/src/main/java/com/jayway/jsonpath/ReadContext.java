@@ -133,5 +133,4 @@ public interface ReadContext {
      */
     Object readRoot(String[] paths, Predicate... filters);
 
-
 }

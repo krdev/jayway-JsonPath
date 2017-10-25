@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.regex.Pattern;
 
 import static com.jayway.jsonpath.Criteria.where;
@@ -348,6 +349,12 @@ public class FilterTest extends BaseTest {
                 }
                 return false;
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+				// TODO Auto-generated method stub
+				
+			}
         };
 
         Filter rootChildFilter = filter(where("name").regex(Pattern.compile("rootChild_[A|B]")));
@@ -368,6 +375,12 @@ public class FilterTest extends BaseTest {
             public boolean apply(PredicateContext ctx) {
                 return 1 == (Integer)ctx.item();
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+				// TODO Auto-generated method stub
+				
+			}
         };
 
         List<Integer> res = JsonPath.read(doc, "$.items[?]", customFilter);

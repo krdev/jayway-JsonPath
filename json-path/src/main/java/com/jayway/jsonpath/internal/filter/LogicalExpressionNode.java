@@ -5,6 +5,8 @@ import com.jayway.jsonpath.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 public class LogicalExpressionNode extends ExpressionNode {
     protected List<ExpressionNode> chain = new ArrayList<ExpressionNode>();
@@ -85,4 +87,16 @@ public class LogicalExpressionNode extends ExpressionNode {
         }
     }
 
+    @Override
+	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+        if(operator == LogicalOperator.OR || operator == LogicalOperator.AND){
+            for (ExpressionNode expression : chain) {
+                expression.getRelationalExprValues(valuesMap);
+            }
+        } else {
+            ExpressionNode expression = chain.get(0);
+            expression.getRelationalExprValues(valuesMap);
+        }
+    	return;
+    }
 }

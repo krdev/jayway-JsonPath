@@ -1,5 +1,6 @@
 package com.jayway.jsonpath;
 
+import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.JsonPath.using;
 import static com.jayway.jsonpath.TestUtils.assertEvaluationThrows;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,7 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -316,6 +320,102 @@ public class MultiPropTest {
         Assert.assertEquals(arrivalAirportIdentifierPropertyID, "searchTerms");
         Object arrivalAirportIdentifierValue = jp.getMapValue(jp.getArrayIndex(jp.getMapValue(arrivalAirport, "identifier"), 0), "value");
         Assert.assertEquals(arrivalAirportIdentifierValue, "dallas ft worth texas");
+    }
+    
+    /**
+     * Test extraction of relational expression values for single guid filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionSingleGuid() throws IOException {
+        final String path = "$.[?(@.guid == \"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\")]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues();
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['guid']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "\"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\"");
+    }
+   
+    /**
+     * Test extraction of relational expression values for single email filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionSingleEmail() throws IOException {
+        final String path = "$.[?(\"krishna@tetali1.com\" in @.mailboxes[*].email)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"krishna@tetali1.com\"");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "@['mailboxes'][*]['email']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for single sledid filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionSingleSledId() throws IOException {
+        final String path = "$.[?(\"123456789\" in @.mailboxes[*].sledId)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "@['mailboxes'][*]['sledId']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"123456789\"");
+    }
+    
+    /**
+     * Test extraction of relational expression values for guid and email filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionGuidAndEmail() throws IOException {
+        final String path = "$.[?(@.guid == \"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\" && \"krishna@tetali1.com\" in @.mailboxes[*].email)]" ;
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['guid']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "\"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\"");
+        Assert.assertEquals(valuesMap.get(1).getKey(), "\"krishna@tetali1.com\"");
+        Assert.assertEquals(valuesMap.get(1).getValue(), "@['mailboxes'][*]['email']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for sledid and email filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionSledidAndEmail() throws IOException {
+        final String path = "$.[?(\"123456789\" in @.mailboxes[*].sledId && \"krishna@tetali1.com\" in @.mailboxes[*].email)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getValue(), "@['mailboxes'][*]['sledId']");
+        Assert.assertEquals(valuesMap.get(0).getKey(), "\"123456789\"");
+        Assert.assertEquals(valuesMap.get(1).getKey(), "\"krishna@tetali1.com\"");
+        Assert.assertEquals(valuesMap.get(1).getValue(), "@['mailboxes'][*]['email']");
+    }
+    
+    /**
+     * Test extraction of relational expression values for guid && sledid filter
+     * @throws IOException
+     */
+    @Test
+    public void testmailboxesResourceJsonFilterExtractionGuidAndSledId() throws IOException {
+        final String path = "$.[?(@.guid == \"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\" && \"123456789\" in @.mailboxes[*].sledId)]";
+        
+        JsonPath jsonPath = JsonPath.compile(path);
+        List<SimpleEntry<String, String>> valuesMap = jsonPath.getRelationalExprValues(); 
+        Assert.assertNotNull(valuesMap);
+        Assert.assertEquals(valuesMap.get(0).getKey(), "@['guid']");
+        Assert.assertEquals(valuesMap.get(0).getValue(), "\"XT7ZVVX7Y5MZE3R6XOKZHFD2EQ1\"");
+        Assert.assertEquals(valuesMap.get(1).getValue(), "@['mailboxes'][*]['sledId']");
+        Assert.assertEquals(valuesMap.get(1).getKey(), "\"123456789\"");
     }
     
     /**

@@ -14,7 +14,10 @@
  */
 package com.jayway.jsonpath.internal.path;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -302,5 +305,19 @@ public abstract class PathToken {
 
     public void setNext(final PathToken next) {
         this.next = next;
+    }
+    
+    /**
+     * Fetches the relational expression values from this path.
+     *
+     * @return EvaluationContext containing results of evaluation
+     */
+    public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+    	if (isLeaf()) {
+            return;
+        } else {
+            next().getRelationalExprValues(valuesMap);
+            return;
+        }
     }
 }

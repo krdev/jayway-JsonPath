@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -21,6 +22,10 @@ public class PredicateTest extends BaseTest {
             public boolean apply(PredicateContext ctx) {
                 return ctx.item(Map.class).containsKey("isbn");
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+			}
         };
 
         assertThat(reader.read("$.store.book[?].isbn", List.class, booksWithISBN)).containsOnly("0-395-19395-8", "0-553-21311-3");
@@ -34,6 +39,10 @@ public class PredicateTest extends BaseTest {
             public boolean apply(PredicateContext ctx) {
                 return ctx.item(Map.class).containsKey("isbn");
             }
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+			}
         };
 
         Object result = using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] { "$.store.book[?].isbn" },
@@ -57,6 +66,10 @@ public class PredicateTest extends BaseTest {
     		public boolean apply(PredicateContext ctx) {
     			return ctx.item(Map.class).containsKey("isbn");
     		}
+
+			@Override
+			public void getRelationalExprValues(final List<SimpleEntry<String, String>> valuesMap) {
+			}
     	};
     	Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
     	DocumentContext dc = using(conf).parse(JSON_DOCUMENT);

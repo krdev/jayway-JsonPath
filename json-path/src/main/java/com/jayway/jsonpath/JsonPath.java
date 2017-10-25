@@ -26,6 +26,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.jayway.jsonpath.internal.EvaluationContext;
 import com.jayway.jsonpath.internal.ParseContextImpl;
@@ -211,6 +213,16 @@ public class JsonPath {
             }
         }
     }
+
+    /**
+     * Fetches a list of left and right {@link SimpleEntry} values of relational expressions in the path.
+     *
+     * @return List of {@link SimpleEntry} objects with left and right values in relational expressions in the path.
+     */
+    public List<SimpleEntry<String, String>> getRelationalExprValues() {
+        return path.getRelationalExprValues();
+    }
+    
 
     /**
      * Set the value this path points to in the provided jsonObject

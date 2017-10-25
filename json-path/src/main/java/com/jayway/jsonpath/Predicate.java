@@ -14,14 +14,24 @@
  */
 package com.jayway.jsonpath;
 
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
+
 import com.jayway.jsonpath.spi.mapper.MappingException;
 
 /**
- *
+ * Interface to define predicate filter methods.
  */
 public interface Predicate {
 
+	/** check if a predicate filter applies to an Object in the json */
     boolean apply(PredicateContext ctx);
+    /**
+     * Get a List of SimpleEntry objects containing the left and right values of the relational expressions in the Json Path.
+     * 
+     * @param valuesMap The List of SimpleEntry objects containing the left and right values of the relational expressions.
+     */
+    void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap);
 
     public interface PredicateContext {
 

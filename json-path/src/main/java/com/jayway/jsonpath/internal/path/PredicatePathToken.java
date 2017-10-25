@@ -21,6 +21,8 @@ import com.jayway.jsonpath.internal.EvaluationAbortException;
 import com.jayway.jsonpath.internal.PathRef;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -107,6 +109,14 @@ public class PredicatePathToken extends PathToken {
         return false;
     }
 
-
-
+    /**
+     * Fetches the relational expression values from this path.
+     *
+     * @return EvaluationContext containing results of evaluation
+     */
+    public void getRelationalExprValues(List<SimpleEntry<String,String>> valuesMap){
+    	for (Predicate predicate : predicates) {
+            predicate.getRelationalExprValues(valuesMap);
+        }
+    }
 }

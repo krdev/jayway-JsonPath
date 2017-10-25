@@ -19,6 +19,9 @@ import com.jayway.jsonpath.internal.filter.FilterCompiler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 
 import static java.util.Arrays.asList;
 
@@ -48,7 +51,9 @@ public abstract class Filter implements Predicate {
     @Override
     public abstract boolean apply(PredicateContext ctx);
 
-
+    @Override
+	public abstract void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap);
+    
     public Filter or(final Predicate other){
         return new OrFilter(this, other);
     }
@@ -79,6 +84,12 @@ public abstract class Filter implements Predicate {
             return predicate.apply(ctx);
         }
 
+        @Override
+    	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+        	predicate.getRelationalExprValues(valuesMap);
+        	return;
+        }
+        
         @Override
         public String toString() {
             String predicateString = predicate.toString();
@@ -118,6 +129,14 @@ public abstract class Filter implements Predicate {
             return true;
         }
 
+        @Override
+    	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+        	for (Predicate predicate : predicates) {
+        		predicate.getRelationalExprValues(valuesMap);
+        	}
+        	return;
+        }
+        
         @Override
         public String toString() {
             Iterator<Predicate> i = predicates.iterator();
@@ -160,6 +179,13 @@ public abstract class Filter implements Predicate {
             return a || right.apply(ctx);
         }
 
+        @Override
+    	public void getRelationalExprValues(final List<SimpleEntry<String,String>> valuesMap){
+        	left.getRelationalExprValues(valuesMap);
+        	right.getRelationalExprValues(valuesMap);
+        	return;
+        }
+        
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();

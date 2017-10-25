@@ -14,7 +14,10 @@
  */
 package com.jayway.jsonpath.internal.path;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,5 +144,17 @@ public class CompiledPath implements Path {
     @Override
     public String toString() {
         return root.toString();
+    }
+    
+    /**
+     * Fetches the relational expression values from this path.
+     *
+     * @return EvaluationContext containing results of evaluation
+     */
+	@Override
+    public List<SimpleEntry<String, String>> getRelationalExprValues(){
+    	final List<SimpleEntry<String, String>> valuesMap = new ArrayList<SimpleEntry<String, String>>();
+    	root.next().getRelationalExprValues(valuesMap);
+    	return valuesMap;
     }
 }
