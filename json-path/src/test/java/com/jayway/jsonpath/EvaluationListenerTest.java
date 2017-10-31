@@ -1,6 +1,9 @@
 package com.jayway.jsonpath;
 
+import static com.jayway.jsonpath.JsonPath.using;
 import org.junit.Test;
+
+import com.jayway.jsonpath.internal.DefaultsImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,33 @@ public class EvaluationListenerTest extends BaseTest {
         };
         List<String> title = JsonPath.parse(JSON_DOCUMENT).withListeners(firstResultListener).read("$..title", List.class);
         assertThat(title).containsExactly("Sayings of the Century");
+    }
+
+    @Test
+    public void add_evaluation_listener() {
+        EvaluationListener firstResultListener = new EvaluationListener() {
+            @Override
+            public EvaluationContinuation resultFound(FoundResult found) {
+                return EvaluationContinuation.ABORT;
+            }
+        };
+        Configuration conf = Configuration.defaultConfiguration().addEvaluationListeners(firstResultListener);
+        List<String> title = using(conf).parse(JSON_DOCUMENT).read("$..title", List.class);
+        assertThat(title).containsExactly("Sayings of the Century");
+    }
+
+    @Test
+    public void add_json_provider() {
+        Configuration conf = Configuration.defaultConfiguration().jsonProvider(DefaultsImpl.INSTANCE.jsonProvider());
+        String title = using(conf).parse(JSON_DOCUMENT).read("$.string-property");
+        assertThat(title).isEqualTo("string-value");
+    }
+
+    @Test
+    public void add_mapping_provider() {
+        Configuration conf = Configuration.defaultConfiguration().mappingProvider(DefaultsImpl.INSTANCE.mappingProvider());
+        String title = using(conf).parse(JSON_DOCUMENT).read("$.string-property");
+        assertThat(title).isEqualTo("string-value");
     }
 
     @Test

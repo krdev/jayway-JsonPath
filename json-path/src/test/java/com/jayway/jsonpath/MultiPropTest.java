@@ -1,15 +1,16 @@
 package com.jayway.jsonpath;
 
-import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.JsonPath.using;
 import static com.jayway.jsonpath.TestUtils.assertEvaluationThrows;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -180,40 +181,104 @@ public class MultiPropTest {
     }
     
     @Test
-    public void deep_scan_returns_empty_map_readRoot_with_supress_exceptions() {
+    public void deep_scan_does_not_throw_exception_readRoot_with_supressExceptions() {
     	final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
-    	 Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
-    	 DocumentContext dc = using(conf).parse(json);
-    	 Object root = dc.readRoot(new String[] { "$..['a', 'c'].v" });
-    	 Assert.assertTrue(conf.jsonProvider().isMap(root));
-    	 Assert.assertEquals(root.toString(), "{}");
+    	Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
+    	Object root = using(conf).parse(json).readRoot(new String[] { "$..['a', 'c'].v" });
+    	Assert.assertTrue(conf.jsonProvider().isMap(root));
+    	Assert.assertEquals(conf.jsonProvider().length(root),0);
+    }
+
+    @Test
+    public void deep_scan_returns_empty_map_readRoot_with_supress_exceptions_and_as_path_list() {
+    	final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
+    	Configuration conf = Configuration.builder().build().addOptions(Option.SUPPRESS_EXCEPTIONS, Option.AS_PATH_LIST);
+    	DocumentContext dc = using(conf).parse(json);
+    	Object root = dc.read("$..['a', 'c'].z");
+    	Assert.assertTrue(conf.jsonProvider().isArray(root));
+    	Assert.assertEquals(root.toString(), "[]");
     }
 
     @Test
     public void multi_props_can_be_in_the_middle() {
-        final String json = "{\"x\": [null, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}]}";
-        Object result = JsonPath.parse(json).read("$.x[1]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
-        result = JsonPath.parse(json).read("$.x[*]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
-        result = JsonPath.parse(json).read("$[*][*]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+    	final String json = "{\"x\": [null, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}]}";
+    	Object result = JsonPath.parse(json).read("$.x[1]['a', 'c'].v");
+    	assertThat(result).asList().containsOnly(5, 1);
+    	result = JsonPath.parse(json).read("$.x[*]['a', 'c'].v");
+    	assertThat(result).asList().containsOnly(5, 1);
+    	result = JsonPath.parse(json).read("$[*][*]['a', 'c'].v");
+    	assertThat(result).asList().containsOnly(5, 1);
 
-        result = JsonPath.parse(json).read("$.x[1]['d', 'a', 'c', 'm'].v");
-        assertThat(result).asList().containsOnly(5, 1);
-        result = JsonPath.parse(json).read("$.x[*]['d', 'a', 'c', 'm'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+    	result = JsonPath.parse(json).read("$.x[1]['d', 'a', 'c', 'm'].v");
+    	assertThat(result).asList().containsOnly(5, 1);
+    	result = JsonPath.parse(json).read("$.x[*]['d', 'a', 'c', 'm'].v");
+    	assertThat(result).asList().containsOnly(5, 1);
     }
 
     @Test
     public void non_leaf_multi_props_can_be_required() {
-        final Configuration conf = Configuration.defaultConfiguration().addOptions(Option.REQUIRE_PROPERTIES);
-        final String json = "{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}";
+    	final Configuration conf = Configuration.defaultConfiguration().addOptions(Option.REQUIRE_PROPERTIES);
+    	final String json = "{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}";
 
-        assertThat(using(conf).parse(json).read("$['a', 'c'].v")).asList().containsOnly(5, 1);
-        assertEvaluationThrows(json, "$['d', 'a', 'c', 'm'].v", PathNotFoundException.class, conf);
+    	assertThat(using(conf).parse(json).read("$['a', 'c'].v")).asList().containsOnly(5, 1);
+    	assertEvaluationThrows(json, "$['d', 'a', 'c', 'm'].v", PathNotFoundException.class, conf);
     }
 
+    @Test
+    public void testReadWithJsonFileInput() throws IOException, URISyntaxException {
+        
+        JsonPath path = JsonPath.compile("$.subReservation[0].reservationFor.@type");
+        Assert.assertEquals(path.getPath(), "$['subReservation'][0]['reservationFor']['@type']");
+        Assert.assertTrue(JsonPath.isPathDefinite(path.getPath()));
+        Assert.assertTrue(path.isDefinite());
+        URL fileUrl = this.getClass().getClassLoader().getResource("basicFlightReservation.json");
+        File jsonFile = new File(fileUrl.toURI());
+        Object root = path.read(jsonFile);
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+        
+        root = JsonPath.read(jsonFile, path.getPath());
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+    }
+    
+    @Test
+    public void testReadWithJsonPathParsingUsingInputStream() throws IOException, URISyntaxException {
+        URL fileUrl = this.getClass().getClassLoader().getResource("basicFlightReservation.json");
+        File jsonFile = new File(fileUrl.toURI());
+        Object root = JsonPath.parse(jsonFile).read("$.subReservation[0].reservationFor.@type");
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+    }
+    
+    @Test
+    public void testDifferentReads() throws IOException, URISyntaxException {
+        URL fileUrl = this.getClass().getClassLoader().getResource("basicFlightReservation.json");
+        Object root = JsonPath.parse(fileUrl).read("$.subReservation[0].reservationFor.@type");
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+        
+        JsonPath path = JsonPath.compile("$.subReservation[0].reservationFor.@type");
+        root = path.read(fileUrl.openStream());
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+        
+        final Configuration conf = Configuration.defaultConfiguration();
+        root = JsonPath.using(conf.jsonProvider()).parse(new File(fileUrl.toURI())).read("$.subReservation[0].reservationFor.@type");
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+    }
+    
+    @Test
+    public void testReadWithJsonFileInputUsingConf() throws IOException, URISyntaxException {
+    	final Configuration conf = Configuration.defaultConfiguration();
+        URL fileUrl = this.getClass().getClassLoader().getResource("basicFlightReservation.json");
+        File jsonFile = new File(fileUrl.toURI());
+        Object root = using(conf).parse(jsonFile).read("$.subReservation[0].reservationFor.@type");
+        Assert.assertNotNull(root);
+        Assert.assertEquals(root.toString(), "Flight");
+    }
+    
     @Test
     public void testIosShortPayloadBasicFlightReservation() throws IOException {
         final InputStream jsonStream = this.getClass().getClassLoader().getResourceAsStream("basicFlightReservation.json");

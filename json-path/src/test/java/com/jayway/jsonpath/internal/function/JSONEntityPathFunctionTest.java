@@ -2,7 +2,12 @@ package com.jayway.jsonpath.internal.function;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configurations;
+import com.jayway.jsonpath.JsonPathException;
+import com.jayway.jsonpath.Option;
+
 import net.minidev.json.JSONArray;
+
+import static com.jayway.jsonpath.JsonPath.using;
 import org.junit.Test;
 
 /**
@@ -73,6 +78,18 @@ public class JSONEntityPathFunctionTest extends BaseFunctionTest {
         verifyFunction(conf, "$.batches.length()", BATCH_JSON, 2);
     }
 
+    @Test(expected=JsonPathException.class)
+    public void testjsonPathExceptionForFunctionPathWithOptAsPathListSet() {
+    	Configuration conf1 = Configurations.JSON_SMART_CONFIGURATION.addOptions(Option.AS_PATH_LIST);
+    	using(conf1).parse(BATCH_JSON).read("$.batches.length()");
+    }
+
+    @Test(expected=JsonPathException.class)
+    public void testjsonPathExceptionForFunctionPathWithAlwaysReturnAsListSet() {
+    	Configuration conf1 = Configurations.JSON_SMART_CONFIGURATION.addOptions(Option.ALWAYS_RETURN_LIST);
+        using(conf1).parse(BATCH_JSON).read("$.batches.length()");
+    }
+    
     /**
      * The fictitious use-case/story - is we have a collection of batches with values indicating some quality metric.
      * We want to determine the average of the values for only the batch's values where the number of items in the batch

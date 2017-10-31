@@ -8,15 +8,18 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ShortNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.mapper.MappingException;
 
 public class JacksonJsonNodeJsonProviderTest extends BaseTest {
@@ -50,9 +53,96 @@ public class JacksonJsonNodeJsonProviderTest extends BaseTest {
     }
 
     @Test
+    public void jackson_json_set_property() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	final ObjectMapper mapper = new ObjectMapper();
+    	final ArrayNode root = mapper.createArrayNode();
+    	jjnp.setProperty(root, "0", "10");
+    	assertThat(jjnp.getArrayIndex(root, 0).toString()).isEqualTo("\"10\"");
+    }
+    
+    @Test
+    public void jackson_json_remove_property() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	final ObjectMapper mapper = new ObjectMapper();
+    	final ArrayNode root = mapper.createArrayNode();
+    	jjnp.setProperty(root, "0", "10");
+    	assertThat(jjnp.getArrayIndex(root, 0).toString()).isEqualTo("\"10\"");
+    	jjnp.removeProperty(root, "0");
+    	Assert.assertFalse(root.has("0"));
+    }
+
+    @Test
+    public void jackson_json_remove_property_Map() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	final ObjectMapper mapper = new ObjectMapper();
+    	final ObjectNode root = mapper.createObjectNode();
+    	jjnp.setProperty(root, "0", "10");
+    	assertThat(jjnp.getProperty(root, 0).toString()).isEqualTo("10");
+    	jjnp.removeProperty(root, "0");
+    	Assert.assertFalse(root.has("0"));
+    }
+
+    @Test(expected=JsonPathException.class)
+    public void jackson_tojson_Non_json_node() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	Boolean bn = new Boolean(true);
+    	jjnp.toJson(bn);
+    }
+
+    @Test
+    public void jackson_get_object_mapper() {
+    	final ObjectMapper mapper = new ObjectMapper();
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider(mapper);
+    	Assert.assertEquals(jjnp.getObjectMapper(), mapper);
+    }
+
+    @Test
+    public void jackson_unwrap_null() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	Assert.assertNull(jjnp.unwrap(null));
+    }
+
+    @Test(expected=JsonPathException.class)
+    public void jackson_json_length_boolean() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	Boolean bn = new Boolean(true);
+    	jjnp.length(bn);
+    }
+
+    @Test
+    public void jackson_json_length_TextNode() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	TextNode tn = new TextNode("");
+    	assertThat(jjnp.length(tn)).isEqualTo(0);
+    }
+
+    @Test
+    public void jackson_json_set_property_Map() {
+    	JacksonJsonNodeJsonProvider jjnp= new JacksonJsonNodeJsonProvider();
+    	final ObjectMapper mapper = new ObjectMapper();
+    	final ObjectNode root = mapper.createObjectNode();
+    	jjnp.setProperty(root, "a", "b");
+    	jjnp.setProperty(root, "x", 10);
+    	jjnp.setProperty(root, "xL", 100L);
+    	jjnp.setProperty(root, "xL", 100L);
+    	jjnp.setProperty(root, "xs", (short)1);
+    	jjnp.setProperty(root, "f", (float)1.10);
+    	jjnp.setProperty(root, "bool", true);
+    	assertThat(jjnp.getMapValue(root, "a")).isEqualTo("b");
+    	assertThat(jjnp.getMapValue(root, "x")).isEqualTo(10);
+    	assertThat(jjnp.getMapValue(root, "xL")).isEqualTo(100L);
+    	ShortNode s = new ShortNode((short) 1); 
+    	assertThat(jjnp.getMapValue(root, "xs").toString()).isEqualTo(s.asText());
+    	Float f = new Float((float) 1.10); 
+    	assertThat(jjnp.getMapValue(root, "f")).isEqualTo(f.floatValue());
+    	assertThat(jjnp.getMapValue(root, "bool")).isEqualTo(true);
+    }
+
+    @Test
     public void json_can_be_parsed_readLineageRoot() {
-        ObjectNode node = (ObjectNode) using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] { "$" });
-        assertThat(node.get("string-property").asText()).isEqualTo("string-value");
+    	ObjectNode node = (ObjectNode) using(JACKSON_JSON_NODE_CONFIGURATION_FOR_READROOT).parse(JSON_DOCUMENT).readRoot(new String[] { "$" });
+    	assertThat(node.get("string-property").asText()).isEqualTo("string-value");
     }
 
     @Test
